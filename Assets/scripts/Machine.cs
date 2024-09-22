@@ -5,329 +5,559 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections;
+using UnityEngine.EventSystems;
+using IronPython.Runtime;
+using System;
 
-public class Machine : MonoBehaviour
+public class Machine : MonoBehaviour, IPointerClickHandler
 {
-  public string pyExecutedFilePath;
-  public string typeName;
+    public IDE ide;
 
-  [System.NonSerialized]
-  public bool isRunning;
+    public string pyExecutedFilePath;
+    public string typeName;
+    [SerializeField]
+    PropertiesCanvas _propertiesCanvasPrefab;
 
-  [System.NonSerialized]
-  public bool isReseting;
+    public List<MachineComponent> machineComponentPrefabs;
+    List<MachineComponent> _machineComponents = new List<MachineComponent>();
 
-  ScriptEngine _engine = PythonEngine.instance;
-  ScriptSource _source = null;
-  ScriptScope _scope = null;
+    [SerializeField]
+    Transform _machineComponentContainer;
 
-  Dictionary<string, object> _registeredVariables = new Dictionary<string, object>();
+    [System.NonSerialized]
+    public bool isRunning;
 
-  List<string> _yieldFunctions = new List<string>();
+    [System.NonSerialized]
+    public bool isReseting;
 
-  Coroutine _mainStartFnCoroutine;
+    ScriptEngine _engine = PythonEngine.instance;
+    ScriptSource _source = null;
+    ScriptScope _scope = null;
 
-  Vector3 _currentPosition;
+    Dictionary<string, object> _registeredVariables = new();
 
-  Quaternion _currentAngle;
+    List<string> _yieldFunctions = new();
 
-  bool _isRotating;
+    Coroutine _mainStartFnCoroutine;
 
-  Map _map;
+    Vector3 _currentPosition;
 
-  // Start is called before the first frame update
-  protected virtual void Start()
-  {
-    RegisterVariableOrFunction("move_forward", new System.Func<IEnumerator>(MoveForward), true);
-    RegisterVariableOrFunction("rotate_clockwise", new System.Func<IEnumerator>(RotateClockwise), true);
-    RegisterVariableOrFunction("rotate_counterclockwise", new System.Func<IEnumerator>(RotateCounterclockwise), true);
-    RegisterVariableOrFunction("move_to", new System.Func<int, int, IEnumerator>(MoveTo), true);
-    RegisterVariableOrFunction("get_field", new System.Func<Field>(GetField));
-    RegisterVariableOrFunction("log", new System.Action<object>(Log));
+    Quaternion _currentAngle;
 
-    RegisterVariables();
+    bool _isRotating;
 
-    Init();
+    Map _map;
 
-    // Init world map
-    _map = new Map();
-  }
+    FieldGrid _fieldGrid;
 
-  // Update is called once per frame
-  protected virtual void Update()
-  {
+    float _energy;
 
-  }
-
-  public virtual void Run()
-  {
-    if (isRunning)
+    public float energy
     {
-      return;
+        get => _energy; set => _energy = value; 
     }
 
-    if (isReseting)
+    [SerializeField]
+    float _energyForMoving;
+    [SerializeField]
+    float _energyForRotating;
+
+    // Start is called before the first frame update
+    protected virtual void Start()
     {
-      return;
+        AssemblyMachineComponents();
+
+        RegisterVariableOrFunction("move_forward", new System.Func<IEnumerator>(MoveForward), true);
+        RegisterVariableOrFunction("rotate_clockwise", new System.Func<IEnumerator>(RotateClockwise), true);
+        RegisterVariableOrFunction("rotate_counterclockwise", new System.Func<IEnumerator>(RotateCounterclockwise), true);
+        RegisterVariableOrFunction("move_to", new System.Func<int, int, IEnumerator>(MoveTo), true);
+        RegisterVariableOrFunction("get_field", new System.Func<Field>(GetField));
+        RegisterVariableOrFunction("log", new System.Action<object>(Log));
+        RegisterVariableOrFunction("energy", _energy);
+
+        RegisterVariables();
+
+        Init();
+
+        // Init energy
+        _energy = 100000f;
+
+        _fieldGrid = FindObjectOfType<FieldGrid>();
+        // Init world map
+        _map = new Map(_fieldGrid.initialWidth, _fieldGrid.initialHeight);
+        ide = new IDE();
     }
 
-    isRunning = true;
-
-    Compile();
-    Execute();
-
-    _mainStartFnCoroutine = StartCoroutine("StartMainFn");
-  }
-
-  public virtual void Stop()
-  {
-    if (isReseting)
+    void AssemblyMachineComponents()
     {
-      return;
-    }
-
-    isRunning = false;
-
-    if (_mainStartFnCoroutine != null)
-    {
-      StopCoroutine(_mainStartFnCoroutine);
-    }
-
-    isReseting = true;
-
-    StartCoroutine("Reset");
-  }
-
-  protected virtual void RegisterVariables()
-  {
-
-  }
-
-  protected virtual void Init()
-  {
-    if (_engine != null)
-    {
-      _scope = _engine.CreateScope();
-
-      if (_registeredVariables.Any())
-      {
-        _registeredVariables
-          .ToList()
-          .ForEach((x) => _scope.SetVariable(x.Key, x.Value));
-      }
-    }
-  }
-
-  void Compile()
-  {
-    if (_source != null)
-    {
-      _source = null;
-    }
-
-    var script = HandleScript();
-
-    _source = _engine.CreateScriptSourceFromString(script);
-  }
-
-  void Execute()
-  {
-    if (_source != null)
-    {
-      _source.Execute(_scope);
-    }
-  }
-
-  string HandleScript()
-  {
-    var script = File.ReadAllText($@"{CommonConstants.PY_SCRIPT_PATH}{pyExecutedFilePath}");
-
-    script = TranscriptUtils.RemoveBuiltinModule(script, typeName.ToLowerInvariant());
-    script = TranscriptUtils.RemoveAsyncKeyword(script);
-    script = TranscriptUtils.ReplaceAllYieldFunc(script, _yieldFunctions);
-    script = TranscriptUtils.ReplaceAwaitKeywordToYield(script);
-    script = script.Trim();
-
-    return script;
-  }
-
-  protected void RegisterVariableOrFunction(string name, object value, bool isYieldFunc = false)
-  {
-    _registeredVariables.Add(name, value);
-
-    if (isYieldFunc)
-    {
-      _yieldFunctions.Add(name);
-    }
-  }
-
-  IEnumerator StartMainFn()
-  {
-    var mainFn = _scope.GetVariable<System.Func<IEnumerator>>("__main");
-
-    yield return StartCoroutine(mainFn.Invoke());
-
-    isRunning = false;
-  }
-
-  protected virtual IEnumerator Reset()
-  {
-    // Reset rotation
-    if (_isRotating)
-    {
-      var startingAngle = transform.rotation;
-      var finalAngle = _currentAngle;
-      var elapsedTime = 0f;
-
-      while (elapsedTime <= 1f)
-      {
-        elapsedTime += Time.deltaTime / .35f;
-        transform.rotation = Quaternion.Lerp(startingAngle, finalAngle, elapsedTime);
-        yield return null;
-      }
-    }
-
-    // Reset position
-    {
-      var startingPos = transform.position;
-      var finalPos = _currentPosition;
-
-      var elapsedTime = 0f;
-
-      while (elapsedTime <= 1f)
-      {
-        elapsedTime += Time.deltaTime / .5f;
-        transform.position = Vector3.Lerp(startingPos, finalPos, elapsedTime);
-        yield return null;
-      }
-    }
-
-    isReseting = false;
-
-    yield return new WaitForSeconds(.2f);
-  }
-
-  protected virtual IEnumerator MoveTo(int x, int y)
-  {
-    var start = FieldUtils.ToField(transform.position);
-    var pathFound = _map.FindPath(start, new Field
-    {
-      x = x,
-      y = y
-    });
-    var traversePath = _map.TraversePath(pathFound);
-
-    foreach (var path in traversePath)
-    {
-      print($"{{x: {path.field.x}, y: {path.field.y}, direction: {path.direction}}}");
-      var pathDirections = Map.ConvertToPathDirection(path.direction, transform.rotation.eulerAngles.z);
-      foreach (var pathDirection in pathDirections)
-      {
-        switch (pathDirection)
+        if (machineComponentPrefabs != null && machineComponentPrefabs.Any())
         {
-          case PathDirection.Forward:
+            for (int i = 0; i < machineComponentPrefabs.Count; i++)
             {
-              yield return StartCoroutine(MoveForward());
+                var componentPrefab = machineComponentPrefabs.ElementAt(i);
+                if (componentPrefab)
+                {
+                    var component = Instantiate<MachineComponent>(componentPrefab, Vector3.zero, Quaternion.identity, _machineComponentContainer);
+                    component.machine = this;
+                    component.RegisterVariables();
+                    _machineComponents.Add(component);
+                }
             }
-            break;
-          case PathDirection.TurnLeft:
-            {
-              yield return StartCoroutine(RotateCounterclockwise());
-            }
-            break;
-          case PathDirection.TurnRight:
-            {
-              yield return StartCoroutine(RotateClockwise());
-            }
-            break;
         }
-      }
-      yield return new WaitForSeconds(.125f);
     }
-  }
 
-  protected virtual IEnumerator MoveForward()
-  {
-    print("Move forward");
-    var startingPos = transform.position;
-
-    _currentPosition = startingPos;
-
-    var finalPos = transform.position + transform.right;
-
-    if (FieldUtils.IsBeingInField(finalPos))
+    public void OnPointerClick(PointerEventData pointerEventData)
     {
-      var elapsedTime = 0f;
+        if (PropertiesCanvasUtils.propertiesCanvas != null)
+        {
+            Destroy(PropertiesCanvasUtils.propertiesCanvas.gameObject);
+        }
 
-      while (elapsedTime <= 1f)
-      {
-        elapsedTime += Time.deltaTime / .35f;
-        transform.position = Vector3.Lerp(startingPos, finalPos, elapsedTime);
+        PropertiesCanvasUtils.propertiesCanvas = Instantiate<PropertiesCanvas>(_propertiesCanvasPrefab);
+        PropertiesCanvasUtils.propertiesCanvas.propertiesPanel.machine = this;
+    }
+
+    void OnApplicationQuit()
+    {
+        if (ide != null)
+        {
+            ide.Close();
+        }
+    }
+
+    public virtual void OpenIDE()
+    {
+        if (ide != null)
+        {
+            ide.Open(GetExecutedFilePath());
+        }
+    }
+
+    public virtual void CloseIDE()
+    {
+        if (ide != null)
+        {
+            ide.Close();
+        }
+    }
+
+    // Update is called once per frame
+    protected virtual void Update()
+    {
+
+    }
+
+    protected virtual void FixedUpdate()
+    {
+
+    }
+
+    void OnEnable()
+    {
+        Application.logMessageReceived += LogCallback;
+    }
+
+    //Called when there is an exception
+    void LogCallback(string message, string stackTrace, LogType type)
+    {
+        if (type == LogType.Exception)
+        {
+            if (stackTrace.Contains("IronPython"))
+            {
+                print(message);
+                isRunning = false;
+            }
+        }
+    }
+
+    void OnDisable()
+    {
+        Application.logMessageReceived -= LogCallback;
+    }
+
+    public virtual void Run()
+    {
+        if (isRunning)
+        {
+            return;
+        }
+
+        if (isReseting)
+        {
+            return;
+        }
+
+        isRunning = true;
+
+        Compile();
+        Execute();
+
+        _mainStartFnCoroutine = StartCoroutine("StartMainFn");
+    }
+
+    public virtual void Stop()
+    {
+        if (isReseting)
+        {
+            return;
+        }
+
+        isReseting = true;
+        isRunning = false;
+
+        if (_mainStartFnCoroutine != null)
+        {
+            StopCoroutine(_mainStartFnCoroutine);
+        }
+
+
+        StartCoroutine("Reset");
+    }
+
+    protected virtual void RegisterVariables()
+    {
+
+    }
+
+    protected virtual void Init()
+    {
+        if (_engine != null)
+        {
+            _scope = _engine.CreateScope();
+
+            if (_registeredVariables.Any())
+            {
+                _registeredVariables
+                    .ToList()
+                    .ForEach((x) => _scope.SetVariable(x.Key, x.Value));
+            }
+        }
+    }
+
+    void Compile()
+    {
+        if (_source != null)
+        {
+            _source = null;
+        }
+
+        var script = HandleScript();
+
+        _source = _engine.CreateScriptSourceFromString(script);
+    }
+
+    void Execute()
+    {
+        if (_source != null)
+        {
+            _source.Execute(_scope);
+        }
+    }
+
+    string GetExecutedFilePath()
+    {
+        return $@"{CommonConstants.PY_SCRIPT_PATH}{pyExecutedFilePath}";
+    }
+
+    string HandleScript()
+    {
+        var script = File.ReadAllText(GetExecutedFilePath());
+
+        script = TranscriptUtils.RemoveBuiltinModule(script, typeName.ToLowerInvariant());
+        script = TranscriptUtils.RemoveAsyncKeyword(script);
+        script = TranscriptUtils.ReplaceAllYieldFunc(script, _yieldFunctions);
+        script = TranscriptUtils.ReplaceAwaitKeywordToYield(script);
+        script = script.Trim();
+
+        return script;
+    }
+
+    public void RegisterVariableOrFunction(string name, object value, bool isYieldFunc = false)
+    {
+        _registeredVariables.Add(name, value);
+
+        if (isYieldFunc)
+        {
+            _yieldFunctions.Add(name);
+        }
+    }
+
+    IEnumerator StartMainFn()
+    {
+        var mainFn = _scope.GetVariable<System.Func<IEnumerator>>("__main");
+
+        yield return StartCoroutine(mainFn.Invoke());
+
+        isRunning = false;
+    }
+
+    protected virtual IEnumerator Reset()
+    {
+        // Reset rotation
+        if (_isRotating)
+        {
+            var startingAngle = transform.rotation;
+            var finalAngle = _currentAngle;
+            var elapsedTime = 0f;
+
+            while (elapsedTime <= 1f)
+            {
+                elapsedTime += Time.deltaTime / .35f;
+                transform.rotation = Quaternion.Lerp(startingAngle, finalAngle, elapsedTime);
+                yield return null;
+            }
+        }
+
+        // Reset position
+        {
+            var startingPos = transform.position;
+            var finalPos = _currentPosition;
+
+            var elapsedTime = 0f;
+
+            while (elapsedTime <= 1f)
+            {
+                elapsedTime += Time.deltaTime / .5f;
+                transform.position = Vector3.Lerp(startingPos, finalPos, elapsedTime);
+                yield return null;
+            }
+        }
+
+        isReseting = false;
+
+        yield return new WaitForSeconds(.2f);
+    }
+
+    public bool ConsumeEnergy(float consuming)
+    {
+        _energy -= consuming;
+
+        if(_energy < 0f)
+        {
+            _energy = 0f;
+            return false;
+        }
+        return true;
+    }
+
+    protected virtual IEnumerator MoveTo(int x, int y)
+    {
+        var start = FieldUtils.ToField(transform.position);
+        var pathFound = _map.FindPath(start, new Field
+        {
+            x = x,
+            y = y
+        });
+        var traversePath = _map.TraversePath(pathFound);
+
+        foreach (var path in traversePath)
+        {
+            print($"{{x: {path.field.x}, y: {path.field.y}, direction: {path.direction}}}");
+            var pathDirections = Map.ConvertToPathDirection(path.direction, transform.rotation.eulerAngles.z);
+            foreach (var pathDirection in pathDirections)
+            {
+                switch (pathDirection)
+                {
+                    case PathDirection.Forward:
+                        {
+                            print("Move forward");
+                            var startingPos = transform.position;
+
+                            _currentPosition = startingPos;
+
+                            var finalPos = transform.position + transform.right;
+
+                            if (FieldUtils.IsBeingInField(finalPos, _fieldGrid.initialWidth - 1, _fieldGrid.initialHeight - 1))
+                            {
+                                var elapsedTime = 0f;
+
+                                while (elapsedTime <= 1f)
+                                {
+                                    elapsedTime += Time.deltaTime / .35f;
+                                    transform.position = Vector3.Lerp(startingPos, finalPos, elapsedTime);
+                                    yield return null;
+                                }
+
+                                _currentPosition = finalPos;
+                            }
+                            if (!ConsumeEnergy(_energyForMoving))
+                            {
+                                Stop();
+                                yield break;
+                            }
+                            //yield return new WaitForSeconds(.125f);
+                            yield return null;
+                        }
+                        break;
+                    case PathDirection.TurnLeft:
+                        {
+                            var startingAngle = transform.rotation;
+                            _currentAngle = startingAngle;
+
+                            var finalAngle = startingAngle * Quaternion.Euler(0f, 0f, 90f);
+                            var elapsedTime = 0f;
+
+                            _isRotating = true;
+
+                            while (elapsedTime <= 1f)
+                            {
+                                elapsedTime += Time.deltaTime / .35f;
+                                transform.rotation = Quaternion.Lerp(startingAngle, finalAngle, elapsedTime);
+                                yield return null;
+                            }
+
+                            _isRotating = false;
+                            
+                            _currentAngle = finalAngle;
+
+                            if (!ConsumeEnergy(_energyForRotating))
+                            {
+                                Stop();
+                                yield break;
+                            }
+
+                            yield return null;
+                        }
+                        break;
+                    case PathDirection.TurnRight:
+                        {
+                            var startingAngle = transform.rotation;
+
+                            _currentAngle = startingAngle;
+
+                            var finalAngle = startingAngle * Quaternion.Euler(0f, 0f, -90f);
+                            var elapsedTime = 0f;
+
+                            _isRotating = true;
+
+                            while (elapsedTime <= 1f)
+                            {
+                                elapsedTime += Time.deltaTime / .35f;
+                                transform.rotation = Quaternion.Lerp(startingAngle, finalAngle, elapsedTime);
+                                yield return null;
+                            }
+
+                            _isRotating = false;
+
+                            _currentAngle = finalAngle;
+
+                            if (!ConsumeEnergy(_energyForRotating))
+                            {
+                                Stop();
+                                yield break;
+                            }
+
+                            yield return null;
+                        }
+                        break;
+                }
+            }
+        }
         yield return null;
-      }
-
-      _currentPosition = finalPos;
     }
 
-    yield return new WaitForSeconds(.125f);
-  }
-
-  protected virtual IEnumerator RotateClockwise()
-  {
-    print("Rotate clockwise");
-    var startingAngle = transform.rotation;
-
-    _currentAngle = startingAngle;
-
-    var finalAngle = startingAngle * Quaternion.Euler(0f, 0f, -90f);
-    var elapsedTime = 0f;
-
-    _isRotating = true;
-
-    while (elapsedTime <= 1f)
+    protected virtual IEnumerator MoveForward()
     {
-      elapsedTime += Time.deltaTime / .35f;
-      transform.rotation = Quaternion.Lerp(startingAngle, finalAngle, elapsedTime);
-      yield return null;
+        print("Move forward");
+        var startingPos = transform.position;
+
+        _currentPosition = startingPos;
+
+        var finalPos = transform.position + transform.right;
+
+        if (FieldUtils.IsBeingInField(finalPos, _fieldGrid.initialWidth, _fieldGrid.initialHeight))
+        {
+            var elapsedTime = 0f;
+
+            while (elapsedTime <= 1f)
+            {
+                elapsedTime += Time.deltaTime / .35f;
+                transform.position = Vector3.Lerp(startingPos, finalPos, elapsedTime);
+                yield return null;
+            }
+
+            _currentPosition = finalPos;
+        }
+
+        if (!ConsumeEnergy(_energyForMoving))
+        {
+            Stop();
+            yield break;
+        }
+        //yield return new WaitForSeconds(.125f);
+        yield return null;
     }
 
-    _isRotating = false;
-
-    _currentAngle = finalAngle;
-
-    yield return null;
-  }
-
-  protected virtual IEnumerator RotateCounterclockwise()
-  {
-    print("Rotate counterclockwise");
-    var startingAngle = transform.rotation;
-    _currentAngle = startingAngle;
-
-    var finalAngle = startingAngle * Quaternion.Euler(0f, 0f, 90f);
-    var elapsedTime = 0f;
-
-    _isRotating = true;
-
-    while (elapsedTime <= 1f)
+    protected virtual IEnumerator RotateClockwise()
     {
-      elapsedTime += Time.deltaTime / .35f;
-      transform.rotation = Quaternion.Lerp(startingAngle, finalAngle, elapsedTime);
-      yield return null;
+        print("Rotate clockwise");
+        var startingAngle = transform.rotation;
+
+        _currentAngle = startingAngle;
+
+        var finalAngle = startingAngle * Quaternion.Euler(0f, 0f, -90f);
+        var elapsedTime = 0f;
+
+        _isRotating = true;
+
+        while (elapsedTime <= 1f)
+        {
+            elapsedTime += Time.deltaTime / .35f;
+            transform.rotation = Quaternion.Lerp(startingAngle, finalAngle, elapsedTime);
+            yield return null;
+        }
+
+        _isRotating = false;
+
+        _currentAngle = finalAngle;
+
+        if (!ConsumeEnergy(_energyForRotating))
+        {
+            Stop();
+            yield break;
+        }
+
+        yield return null;
     }
 
-    _isRotating = false;
+    protected virtual IEnumerator RotateCounterclockwise()
+    {
+        print("Rotate counterclockwise");
+        var startingAngle = transform.rotation;
+        _currentAngle = startingAngle;
 
-    yield return null;
-  }
+        var finalAngle = startingAngle * Quaternion.Euler(0f, 0f, 90f);
+        var elapsedTime = 0f;
 
-  protected Field GetField()
-  {
-    return FieldUtils.ToField(_currentPosition);
-  }
+        _isRotating = true;
 
-  void Log(object message)
-  {
-    print(message);
-  }
+        while (elapsedTime <= 1f)
+        {
+            elapsedTime += Time.deltaTime / .35f;
+            transform.rotation = Quaternion.Lerp(startingAngle, finalAngle, elapsedTime);
+            yield return null;
+        }
+
+        _isRotating = false;
+
+        _currentAngle = finalAngle;
+
+        if (!ConsumeEnergy(_energyForRotating))
+        {
+            Stop();
+            yield break;
+        }
+
+        yield return null;
+    }
+
+    protected Field GetField()
+    {
+        return FieldUtils.ToField(_currentPosition);
+    }
+
+    void Log(object message)
+    {
+        print(message);
+    }
 }

@@ -32,11 +32,11 @@ public class Map
 {
   public List<MapCell> map = new List<MapCell>();
 
-  public Map()
+  public Map(int width, int height)
   {
-    for (var y = 0; y < CommonConstants.FIELD_MAX_RANGE; y++)
+    for (var y = 0; y < width; y++)
     {
-      for (var x = 0; x < CommonConstants.FIELD_MAX_RANGE; x++)
+      for (var x = 0; x < height; x++)
       {
         var cell = new MapCell
         {
