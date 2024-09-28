@@ -57,7 +57,10 @@ public class SyntaxHighlighter : MonoBehaviour
     {
         if (completedTransform)
         {
-            inputField.caretPosition = originalCaretPosition;
+            if (inputField.caretPosition < originalCaretPosition)
+            {
+                inputField.caretPosition = originalCaretPosition;
+            }
             completedTransform = false;
         }
     }
@@ -72,6 +75,21 @@ public class SyntaxHighlighter : MonoBehaviour
             {
                 Debug.Log("Shift+Tab detected, preventing input.");
                 return '\0'; // Prevent Tab character from being added when Shift is held
+            }
+        }
+
+        if (addedChar == '\\')
+        {
+            Debug.Log("Esc detected, preventing input.");
+            return '\0';
+        }
+
+        if (addedChar == ' ')
+        {
+            if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+            {
+                Debug.Log("Ctrl+Tab detected, preventing input.");
+                return '\0';
             }
         }
 
