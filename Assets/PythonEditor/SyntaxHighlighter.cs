@@ -2,6 +2,7 @@ using UnityEngine;
 using TMPro;
 using System.Text.RegularExpressions;
 using System.Text;
+using System.Linq;
 
 public class SyntaxHighlighter : MonoBehaviour
 {
@@ -9,6 +10,9 @@ public class SyntaxHighlighter : MonoBehaviour
     private bool isUpdating = false;
     private bool completedTransform = false;
     private bool updateFromShiftTab = false;
+    private bool updateFromCtrlBackspace = false;
+    private bool updateFromEnter = false;
+    private bool valueChanged = false;
     private int originalCaretPosition;
     private int originalStringPosition;
     private string tabSpaceStr;
@@ -16,7 +20,8 @@ public class SyntaxHighlighter : MonoBehaviour
     private void Start()
     {
         inputField.onValidateInput = ValidateInput;
-        inputField.onValueChanged.AddListener(HighlightSyntax);
+        //inputField.onValueChanged.AddListener(HighlightSyntax);
+        inputField.onValueChanged.AddListener(ValueChanged);
     }
 
     void Update()
@@ -27,50 +32,105 @@ public class SyntaxHighlighter : MonoBehaviour
             {
                 if (Input.GetKeyDown(KeyCode.Tab))
                 {
-                    originalCaretPosition = inputField.caretPosition;
-                    var text = inputField.text;
-                    var stringPosition = GetStringPositionFromCaret(text, originalCaretPosition);
-                    if (text[stringPosition - 1] == ' ')
-                    {
-                        updateFromShiftTab = true;
-                        string rawText = StripColorTags(text);
-                        var spaceIndex = FindSpaceIndexFromCaret(rawText, originalCaretPosition);
-                        tabSpaceStr = (spaceIndex) % 2 == 0 ? "  " : " ";
-                        for (int i = 0; i < tabSpaceStr.Length; i++)
-                        {
-                            if (text[stringPosition - 1] == ' ')
-                            {
-                                text = text.Remove(stringPosition - 1, 1);
-                                stringPosition--;
-                                originalCaretPosition--;
-                            }
-                        }
-                        inputField.text = text;
-                        inputField.caretPosition = originalCaretPosition;
-                    }
+                    HandleShiftTab();
                 }
+            }
+
+            if (Input.GetKeyDown(KeyCode.Backspace) && Input.GetKey(KeyCode.LeftControl))
+            {
+                HandleCtrlBackspace();
+            }
+
+            if ((Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)))
+            {
+                HandleEnterKey();
+            }
+
+            HighlightSyntax();
+
+            if (completedTransform)
+            {
+                //inputField.caretPosition = originalCaretPosition;
+                completedTransform = false;
             }
         }
     }
 
-    private void LateUpdate()
+    private void HandleShiftTab()
     {
-        if (completedTransform)
+        originalCaretPosition = inputField.caretPosition;
+        var text = inputField.text;
+        var stringPosition = GetStringPositionFromCaret(text, originalCaretPosition);
+        if (text[stringPosition - 1] == ' ')
         {
-            if (inputField.caretPosition < originalCaretPosition)
+            updateFromShiftTab = true;
+            string rawText = StripColorTags(text);
+            var spaceIndex = FindSpaceIndexFromCaret(rawText, originalCaretPosition);
+            tabSpaceStr = (spaceIndex) % 2 == 0 ? "  " : " ";
+            for (int i = 0; i < tabSpaceStr.Length; i++)
             {
-                inputField.caretPosition = originalCaretPosition;
+                if (text[stringPosition - 1] == ' ')
+                {
+                    text = text.Remove(stringPosition - 1, 1);
+                    stringPosition--;
+                    originalCaretPosition--;
+                }
             }
-            completedTransform = false;
+            inputField.text = text;
+            inputField.caretPosition = originalCaretPosition;
         }
     }
+
+    private void HandleCtrlBackspace()
+    {
+        originalCaretPosition = inputField.caretPosition;
+
+        if (originalCaretPosition > 0)
+        {
+            updateFromCtrlBackspace = true;
+            originalStringPosition = GetStringPositionFromCaret(inputField.text, originalCaretPosition);
+            int wordBoundaryPosition = FindPreviousWordBoundary(inputField.text, originalStringPosition);
+            string newText = inputField.text.Remove(wordBoundaryPosition, originalStringPosition - wordBoundaryPosition);
+            originalCaretPosition -= (originalStringPosition - wordBoundaryPosition);
+            inputField.text = newText;
+            inputField.caretPosition = originalCaretPosition;
+        }
+    }
+
+    private void HandleEnterKey()
+    {
+        // Get the current caret position
+        originalStringPosition = inputField.stringPosition;
+        originalCaretPosition = inputField.caretPosition;
+
+        var textBeforeCaret = inputField.text.Substring(0, originalStringPosition);
+
+        var (areInCodeBlock, indexOfTheFirstCharOfLine) = AreInCodeBlock(textBeforeCaret);
+        if (areInCodeBlock)
+        {
+            updateFromEnter = true;
+            var newLineSpace = indexOfTheFirstCharOfLine + 2;
+            var spaces = new string(' ', newLineSpace);
+            inputField.text = inputField.text.Insert(originalStringPosition, spaces);
+            originalCaretPosition += newLineSpace;
+            inputField.caretPosition = originalCaretPosition;
+        }
+    }
+
+    //private void LateUpdate()
+    //{
+    //    if (completedTransform)
+    //    {
+    //        inputField.caretPosition = originalCaretPosition;
+    //        completedTransform = false;
+    //    }
+    //}
 
     private char ValidateInput(string text, int charIndex, char addedChar)
     {
         // Check if the Tab character is being inserted
         if (addedChar == '\t')
         {
-            // Detect if Shift is held down
             if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
             {
                 Debug.Log("Shift+Tab detected, preventing input.");
@@ -97,28 +157,47 @@ public class SyntaxHighlighter : MonoBehaviour
         return addedChar;
     }
 
-    private void HighlightSyntax(string text)
+    private void ValueChanged(string text)
     {
+        valueChanged = true;
+    }
+
+    private void HighlightSyntax()
+    {
+        if (!valueChanged) return;
+        valueChanged = false;
+
         if (isUpdating) return;
 
         isUpdating = true;
 
         // Save the current caret position
-        if (!updateFromShiftTab)
+        if (!updateFromShiftTab && !updateFromCtrlBackspace && !updateFromEnter)
         {
             originalCaretPosition = inputField.caretPosition;
             originalStringPosition = inputField.stringPosition;
         }
-
-        updateFromShiftTab = false;
+        if (updateFromShiftTab)
+        {
+            updateFromShiftTab = false;
+        }
+        if (updateFromCtrlBackspace)
+        {
+            updateFromCtrlBackspace = false;
+        }
+        if (updateFromEnter)
+        {
+            updateFromEnter = false;
+        }
 
         try
         {
+            var text = inputField.text;
             // Strip existing <color> tags to avoid nested tags
             string rawText = StripColorTags(text);
 
             // Replace \t char by two space
-            if (rawText[originalCaretPosition - 1] == '\t')
+            if (originalCaretPosition > 0 && rawText[originalCaretPosition - 1] == '\t')
             {
                 rawText = rawText.Remove(originalCaretPosition - 1, 1);
                 var spaceIndex = FindSpaceIndexFromCaret(rawText, originalCaretPosition - 1);
@@ -155,11 +234,8 @@ public class SyntaxHighlighter : MonoBehaviour
 
             highlightedText = ReplaceColorTagsWithPlaceholders(highlightedText);
 
-            // Temporarily disable event listener to prevent loop
-            inputField.onValueChanged.RemoveListener(HighlightSyntax);
             inputField.text = highlightedText;
-
-            inputField.onValueChanged.AddListener(HighlightSyntax);
+            inputField.caretPosition = originalCaretPosition;
 
             isUpdating = false;
             completedTransform = true;
@@ -194,6 +270,11 @@ public class SyntaxHighlighter : MonoBehaviour
     {
         // This method removes any existing <color> tags
         return Regex.Replace(text, @"<color=[^>]+>|</color>", string.Empty);
+    }
+
+    private string StripTags(string input)
+    {
+        return Regex.Replace(input, "<.*?>", string.Empty);
     }
 
     private int FindNearestSpace(string originalText, int position)
@@ -264,61 +345,93 @@ public class SyntaxHighlighter : MonoBehaviour
 
     private int GetStringPositionFromCaret(string text, int caretPosition)
     {
-        int visibleCharCount = 0;  // Tracks the number of visible characters
-        bool insideTag = false;    // Tracks if we are inside a rich text tag
+        int visibleCharCount = 0;
+        bool insideTag = false;
 
         for (int i = 0; i < text.Length; i++)
         {
-            // Check if we are at the start of a potential rich text tag
             if (text[i] == '<' && !insideTag)
             {
-                // Check if this is actually a valid tag by finding the closing '>'
                 int closingTagIndex = text.IndexOf('>', i);
 
-                // If a '>' exists and there is a valid closing tag, treat it as a rich text tag
                 if (closingTagIndex != -1 && IsRichTextTag(text, i, closingTagIndex))
                 {
                     insideTag = true;
-                    i = closingTagIndex - 1;  // Skip the entire tag
-                    continue;  // Move to the next character after the tag
+                    i = closingTagIndex - 1;
+                    continue;
                 }
             }
 
-            // If not inside a tag, treat it as a visible character
             if (!insideTag)
             {
                 visibleCharCount++;
 
-                // If the visible character count matches the caret position, return the index
                 if (visibleCharCount == caretPosition)
                 {
                     return i + 1;
                 }
             }
 
-            // End of tag processing
             if (insideTag && text[i] == '>')
             {
-                insideTag = false;  // Exiting the tag
+                insideTag = false;
             }
         }
 
-        return -1;  // Return -1 if no match is found
+        return -1;
     }
 
-    // Helper function to determine if a sequence between '<' and '>' is a valid rich text tag
-    private bool IsRichTextTag(string text, int startIndex, int endIndex)
+    private int FindPreviousWordBoundary(string text, int caretPosition)
     {
-        // Extract the content inside the '<' and '>'
-        string tagContent = text.Substring(startIndex + 1, endIndex - startIndex - 1);
+        int position = caretPosition - 1;
 
-        // Check if this is a valid rich text tag (you can add more valid tags if needed)
-        if (tagContent.StartsWith("/") || tagContent.StartsWith("color") || tagContent.StartsWith("b") || tagContent.StartsWith("i"))
+        while (position >= 0 && text[position] != '\n')
         {
-            return true;  // This is a valid rich text tag
+            if (char.IsWhiteSpace(text[position]))
+            {
+                while (position >= 0 && char.IsWhiteSpace(text[position]) && text[position] != '\n')
+                {
+                    position--;
+                }
+                position++;
+                break;
+            }
+
+            if (!IsWordCharacter(text[position]))
+            {
+                position++;
+                break;
+            }
+
+            position--;
         }
 
-        // Otherwise, treat it as literal text (e.g., "<" or ">")
+        if (position < 0 || (position <= text.Length - 1 && text[position] == '\n'))
+        {
+            position++;
+        }
+
+        return position;
+    }
+
+    private bool IsRichTextTag(string text, int startIndex, int endIndex)
+    {
+        string tagContent = text.Substring(startIndex + 1, endIndex - startIndex - 1);
+
+        if (tagContent.StartsWith("/") || tagContent.StartsWith("color") || tagContent.StartsWith("b") || tagContent.StartsWith("i"))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool IsWordCharacter(char c)
+    {
+        if (char.IsLetterOrDigit(c) || c == '_')
+        {
+            return true;
+        }
         return false;
     }
 
@@ -333,5 +446,48 @@ public class SyntaxHighlighter : MonoBehaviour
             remainCaretPosition -= (lines[i].Length - missingEnterSignIndex);
         }
         return Mathf.Max(remainCaretPosition - 1, 0);
+    }
+
+    private (bool, int) AreInCodeBlock(string textBeforeCaret)
+    {
+        if (textBeforeCaret == null) return (false, 0);
+        textBeforeCaret = StripTags(textBeforeCaret);
+        var cumulativeLength = 0;
+        var lines = textBeforeCaret.Split('\n');
+        var lastLineFirstNonSpaceCharIndex = int.MaxValue;
+        var previousLine = lines.ElementAt(lines.Length - 2);
+
+        if (previousLine != null)
+        {
+            lastLineFirstNonSpaceCharIndex = previousLine.TakeWhile(char.IsWhiteSpace).Count();
+        }
+
+        for (int i = lines.Length - 1; i >= 0; i--)
+        {
+            var currentLine = lines[i];
+            var lineLength = currentLine.Length + 1; // +1 for the newline character
+
+            if (IsInCodeBlock(currentLine))
+            {
+                var firstNonSpaceCharIndex = currentLine.TakeWhile(char.IsWhiteSpace).Count();
+                if (i != lines.Length - 2)
+                {
+                    if (firstNonSpaceCharIndex > 0 && lastLineFirstNonSpaceCharIndex <= firstNonSpaceCharIndex)
+                    {
+                        continue;
+                    }
+                }
+                return (true, firstNonSpaceCharIndex);
+            }
+            cumulativeLength += lineLength;
+        }
+        return (false, 0);
+    }
+
+    private bool IsInCodeBlock(string textBeforeCaret)
+    {
+        // Regex to find if the caret is inside a Python block (e.g., def, if, for, while, try, class, etc.)
+        Regex codeBlockRegex = new Regex(@"(def|if|for|while|try|class|with|elif|else|except)\s.*:\s*(\n|\r\n)?(\s+.*)?$", RegexOptions.Multiline);
+        return codeBlockRegex.IsMatch(textBeforeCaret);
     }
 }
