@@ -503,6 +503,7 @@ GameObject:
   - component: {fileID: 152123231}
   - component: {fileID: 152123233}
   - component: {fileID: 152123232}
+  - component: {fileID: 152123234}
   m_Layer: 5
   m_Name: MainEditorPanel
   m_TagString: Untagged
@@ -570,6 +571,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 152123230}
   m_CullTransparentMesh: 1
+--- !u!114 &152123234
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 152123230}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be38da9529069d94c8417c3324741ce9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  inputField: {fileID: 354337318}
 --- !u!1 &246303110
 GameObject:
   m_ObjectHideFlags: 0
@@ -717,9 +731,6 @@ GameObject:
   - component: {fileID: 354337320}
   - component: {fileID: 354337319}
   - component: {fileID: 354337318}
-  - component: {fileID: 354337321}
-  - component: {fileID: 354337322}
-  - component: {fileID: 354337323}
   m_Layer: 5
   m_Name: CodeInputField
   m_TagString: Untagged
@@ -884,45 +895,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 354337316}
   m_CullTransparentMesh: 1
---- !u!114 &354337321
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 354337316}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: be38da9529069d94c8417c3324741ce9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  inputField: {fileID: 354337318}
---- !u!114 &354337322
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 354337316}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 03bc3518539364d4d9b6ec477f2c6177, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  inputField: {fileID: 354337318}
---- !u!114 &354337323
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 354337316}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ee256bc302f5e48458382be32175154a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  inputField: {fileID: 354337318}
 --- !u!1 &417062440
 GameObject:
   m_ObjectHideFlags: 0
