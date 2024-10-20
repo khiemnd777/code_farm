@@ -1,16 +1,17 @@
 using UnityEngine;
-using IronPython.Hosting;
-using Microsoft.Scripting.Hosting;
+//using Microsoft.Scripting.Hosting;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections;
 using UnityEngine.EventSystems;
-using IronPython.Runtime;
-using System;
+using System.Runtime.InteropServices;
 
 public class Machine : MonoBehaviour, IPointerClickHandler
 {
+    [DllImport("__Internal")]
+    private static extern void SendCoroutineComplete(string gameObjectNamePtr, string coroutineNamePtr);
+
     public IDE ide;
 
     public string pyExecutedFilePath;
@@ -30,9 +31,9 @@ public class Machine : MonoBehaviour, IPointerClickHandler
     [System.NonSerialized]
     public bool isReseting;
 
-    ScriptEngine _engine = PythonEngine.instance;
-    ScriptSource _source = null;
-    ScriptScope _scope = null;
+    //ScriptEngine _engine = PythonEngine.instance;
+    //ScriptSource _source = null;
+    //ScriptScope _scope = null;
 
     Dictionary<string, object> _registeredVariables = new();
 
@@ -54,7 +55,7 @@ public class Machine : MonoBehaviour, IPointerClickHandler
 
     public float energy
     {
-        get => _energy; set => _energy = value; 
+        get => _energy; set => _energy = value;
     }
 
     [SerializeField]
@@ -67,15 +68,15 @@ public class Machine : MonoBehaviour, IPointerClickHandler
     {
         AssemblyMachineComponents();
 
-        RegisterVariableOrFunction("move_forward", new System.Func<IEnumerator>(MoveForward), true);
-        RegisterVariableOrFunction("rotate_clockwise", new System.Func<IEnumerator>(RotateClockwise), true);
-        RegisterVariableOrFunction("rotate_counterclockwise", new System.Func<IEnumerator>(RotateCounterclockwise), true);
-        RegisterVariableOrFunction("move_to", new System.Func<int, int, IEnumerator>(MoveTo), true);
-        RegisterVariableOrFunction("get_field", new System.Func<Field>(GetField));
-        RegisterVariableOrFunction("log", new System.Action<object>(Log));
-        RegisterVariableOrFunction("energy", _energy);
+        //RegisterVariableOrFunction("move_forward", new System.Func<IEnumerator>(MoveForward), true);
+        //RegisterVariableOrFunction("rotate_clockwise", new System.Func<IEnumerator>(RotateClockwise), true);
+        //RegisterVariableOrFunction("rotate_counterclockwise", new System.Func<IEnumerator>(RotateCounterclockwise), true);
+        //RegisterVariableOrFunction("move_to", new System.Func<int, int, IEnumerator>(MoveTo), true);
+        //RegisterVariableOrFunction("get_field", new System.Func<Field>(GetField));
+        //RegisterVariableOrFunction("log", new System.Action<object>(Log));
+        //RegisterVariableOrFunction("energy", _energy);
 
-        RegisterVariables();
+        //RegisterVariables();
 
         Init();
 
@@ -108,13 +109,13 @@ public class Machine : MonoBehaviour, IPointerClickHandler
 
     public void OnPointerClick(PointerEventData pointerEventData)
     {
-        if (PropertiesCanvasUtils.propertiesCanvas != null)
-        {
-            Destroy(PropertiesCanvasUtils.propertiesCanvas.gameObject);
-        }
+        //if (PropertiesCanvasUtils.propertiesCanvas != null)
+        //{
+        //    Destroy(PropertiesCanvasUtils.propertiesCanvas.gameObject);
+        //}
 
-        PropertiesCanvasUtils.propertiesCanvas = Instantiate<PropertiesCanvas>(_propertiesCanvasPrefab);
-        PropertiesCanvasUtils.propertiesCanvas.propertiesPanel.machine = this;
+        //PropertiesCanvasUtils.propertiesCanvas = Instantiate<PropertiesCanvas>(_propertiesCanvasPrefab);
+        //PropertiesCanvasUtils.propertiesCanvas.propertiesPanel.machine = this;
     }
 
     void OnApplicationQuit()
@@ -177,6 +178,7 @@ public class Machine : MonoBehaviour, IPointerClickHandler
 
     public virtual void Run()
     {
+        print("Run");
         if (isRunning)
         {
             return;
@@ -189,14 +191,15 @@ public class Machine : MonoBehaviour, IPointerClickHandler
 
         isRunning = true;
 
-        Compile();
-        Execute();
+        //Compile();
+        //Execute();
 
-        _mainStartFnCoroutine = StartCoroutine("StartMainFn");
+        //_mainStartFnCoroutine = StartCoroutine("StartMainFn");
     }
 
     public virtual void Stop()
     {
+        print("Stop");
         if (isReseting)
         {
             return;
@@ -205,10 +208,10 @@ public class Machine : MonoBehaviour, IPointerClickHandler
         isReseting = true;
         isRunning = false;
 
-        if (_mainStartFnCoroutine != null)
-        {
-            StopCoroutine(_mainStartFnCoroutine);
-        }
+        //if (_mainStartFnCoroutine != null)
+        //{
+        //    StopCoroutine(_mainStartFnCoroutine);
+        //}
 
 
         StartCoroutine("Reset");
@@ -221,37 +224,37 @@ public class Machine : MonoBehaviour, IPointerClickHandler
 
     protected virtual void Init()
     {
-        if (_engine != null)
-        {
-            _scope = _engine.CreateScope();
+        //if (_engine != null)
+        //{
+        //    _scope = _engine.CreateScope();
 
-            if (_registeredVariables.Any())
-            {
-                _registeredVariables
-                    .ToList()
-                    .ForEach((x) => _scope.SetVariable(x.Key, x.Value));
-            }
-        }
+        //    if (_registeredVariables.Any())
+        //    {
+        //        _registeredVariables
+        //            .ToList()
+        //            .ForEach((x) => _scope.SetVariable(x.Key, x.Value));
+        //    }
+        //}
     }
 
     void Compile()
     {
-        if (_source != null)
-        {
-            _source = null;
-        }
+        //if (_source != null)
+        //{
+        //    _source = null;
+        //}
 
-        var script = HandleScript();
+        //var script = HandleScript();
 
-        _source = _engine.CreateScriptSourceFromString(script);
+        //_source = _engine.CreateScriptSourceFromString(script);
     }
 
     void Execute()
     {
-        if (_source != null)
-        {
-            _source.Execute(_scope);
-        }
+        //if (_source != null)
+        //{
+        //    _source.Execute(_scope);
+        //}
     }
 
     string GetExecutedFilePath()
@@ -282,14 +285,14 @@ public class Machine : MonoBehaviour, IPointerClickHandler
         }
     }
 
-    IEnumerator StartMainFn()
-    {
-        var mainFn = _scope.GetVariable<System.Func<IEnumerator>>("__main");
+    //IEnumerator StartMainFn()
+    //{
+    //    var mainFn = _scope.GetVariable<System.Func<IEnumerator>>("__main");
 
-        yield return StartCoroutine(mainFn.Invoke());
+    //    yield return StartCoroutine(mainFn.Invoke());
 
-        isRunning = false;
-    }
+    //    isRunning = false;
+    //}
 
     protected virtual IEnumerator Reset()
     {
@@ -326,13 +329,15 @@ public class Machine : MonoBehaviour, IPointerClickHandler
         isReseting = false;
 
         yield return new WaitForSeconds(.2f);
+
+        SendCoroutineComplete(this.name, "Stop");
     }
 
     public bool ConsumeEnergy(float consuming)
     {
         _energy -= consuming;
 
-        if(_energy < 0f)
+        if (_energy < 0f)
         {
             _energy = 0f;
             return false;
@@ -407,7 +412,7 @@ public class Machine : MonoBehaviour, IPointerClickHandler
                             }
 
                             _isRotating = false;
-                            
+
                             _currentAngle = finalAngle;
 
                             if (!ConsumeEnergy(_energyForRotating))
@@ -458,6 +463,10 @@ public class Machine : MonoBehaviour, IPointerClickHandler
 
     protected virtual IEnumerator MoveForward()
     {
+        if (!isRunning)
+        {
+            yield break;
+        }
         print("Move forward");
         var startingPos = transform.position;
 
@@ -465,32 +474,43 @@ public class Machine : MonoBehaviour, IPointerClickHandler
 
         var finalPos = transform.position + transform.right;
 
+
         if (FieldUtils.IsBeingInField(finalPos, _fieldGrid.initialWidth, _fieldGrid.initialHeight))
         {
             var elapsedTime = 0f;
-
             while (elapsedTime <= 1f)
             {
+                if (!isRunning)
+                {
+                    yield return null;
+                    break;
+                }
                 elapsedTime += Time.deltaTime / .35f;
-                transform.position = Vector3.Lerp(startingPos, finalPos, elapsedTime);
+                var newPosition = Vector3.Lerp(startingPos, finalPos, elapsedTime);
+                newPosition.z = -1f;
+                transform.position = newPosition;
                 yield return null;
             }
 
+            finalPos.z = -1f;
             _currentPosition = finalPos;
         }
-
-        if (!ConsumeEnergy(_energyForMoving))
+        else
         {
-            Stop();
-            yield break;
+            yield return null;
         }
-        //yield return new WaitForSeconds(.125f);
-        yield return null;
+        print(transform.position.z);
+
+        SendCoroutineComplete(this.name, "MoveForward");
     }
 
     protected virtual IEnumerator RotateClockwise()
     {
-        print("Rotate clockwise");
+        if (!isRunning)
+        {
+            yield break;
+        }
+        print("Start Rotate clockwise");
         var startingAngle = transform.rotation;
 
         _currentAngle = startingAngle;
@@ -502,7 +522,11 @@ public class Machine : MonoBehaviour, IPointerClickHandler
 
         while (elapsedTime <= 1f)
         {
-            elapsedTime += Time.deltaTime / .35f;
+            if (!isRunning)
+            {
+                break;
+            }
+            elapsedTime += Time.deltaTime / .125f;
             transform.rotation = Quaternion.Lerp(startingAngle, finalAngle, elapsedTime);
             yield return null;
         }
@@ -511,17 +535,24 @@ public class Machine : MonoBehaviour, IPointerClickHandler
 
         _currentAngle = finalAngle;
 
-        if (!ConsumeEnergy(_energyForRotating))
-        {
-            Stop();
-            yield break;
-        }
-
         yield return null;
+
+        //if (!ConsumeEnergy(_energyForRotating))
+        //{
+        //    Stop();
+        //    SendCoroutineComplete(this.name, "RotateClockwise");
+        //    yield break;
+        //}
+        print("End Rotate clockwise");
+        SendCoroutineComplete(this.name, "RotateClockwise");
     }
 
     protected virtual IEnumerator RotateCounterclockwise()
     {
+        if (!isRunning)
+        {
+            yield break;
+        }
         print("Rotate counterclockwise");
         var startingAngle = transform.rotation;
         _currentAngle = startingAngle;
@@ -533,7 +564,11 @@ public class Machine : MonoBehaviour, IPointerClickHandler
 
         while (elapsedTime <= 1f)
         {
-            elapsedTime += Time.deltaTime / .35f;
+            if (!isRunning)
+            {
+                break;
+            }
+            elapsedTime += Time.deltaTime / .125f;
             transform.rotation = Quaternion.Lerp(startingAngle, finalAngle, elapsedTime);
             yield return null;
         }
@@ -542,13 +577,15 @@ public class Machine : MonoBehaviour, IPointerClickHandler
 
         _currentAngle = finalAngle;
 
-        if (!ConsumeEnergy(_energyForRotating))
-        {
-            Stop();
-            yield break;
-        }
-
         yield return null;
+
+        //if (!ConsumeEnergy(_energyForRotating))
+        //{
+        //    Stop();
+        //    SendCoroutineComplete(this.name, "RotateCounterclockwise");
+        //    yield break;
+        //}
+        SendCoroutineComplete(this.name, "RotateCounterclockwise");
     }
 
     protected Field GetField()

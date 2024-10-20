@@ -584,6 +584,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inputField: {fileID: 354337318}
+  suggestionPanel: {fileID: 942817388}
+  suggestionPanelTransform: {fileID: 942817389}
+  suggestionItemPrefab: {fileID: 2063011208497448151, guid: 21d62b7e68b50d249997cffbffb22e21, type: 3}
+  suggestionContent: {fileID: 1770735550}
 --- !u!1 &246303110
 GameObject:
   m_ObjectHideFlags: 0
@@ -1820,7 +1824,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1525502493
 RectTransform:
   m_ObjectHideFlags: 0
