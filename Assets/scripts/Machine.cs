@@ -372,7 +372,7 @@ public class Machine : MonoBehaviour, IPointerClickHandler
 
                             var finalPos = transform.position + transform.right;
 
-                            if (FieldUtils.IsBeingInField(finalPos, _fieldGrid.initialWidth - 1, _fieldGrid.initialHeight - 1))
+                            if (FieldUtils.IsBeingInField(finalPos, _fieldGrid.initialWidth, _fieldGrid.initialHeight))
                             {
                                 var elapsedTime = 0f;
 

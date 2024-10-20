@@ -34,6 +34,6 @@ public class FieldUtils
   public static bool IsBeingInField(Vector3 position, int maxWidth, int maxHeight)
   {
     var field = ToField(position);
-    return field.x >= 0 && field.x <= maxWidth && field.y >= 0 && field.y <= maxHeight;
+    return field.x >= 0 && field.x < maxWidth && field.y >= 0 && field.y < maxHeight;
   }
 }
