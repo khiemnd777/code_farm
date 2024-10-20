@@ -11,6 +11,12 @@ public class CameraMovement : MonoBehaviour
     [SerializeField]
     float _zoomSpeed = 3f;
 
+    [SerializeField]
+    float _zoomMin = 1f;
+
+    [SerializeField]
+    float _zoomMax = 20f;
+
     float cameraX = 0f;
     float cameraY = 0f;
 
@@ -47,7 +53,7 @@ public class CameraMovement : MonoBehaviour
             // Zooming by mouse scroll
             var orthographicSize = _camera.orthographicSize;
             orthographicSize += Input.GetAxis("Mouse ScrollWheel") * -_zoomSpeed;
-            orthographicSize = Mathf.Clamp(orthographicSize, 1, 10);
+            orthographicSize = Mathf.Clamp(orthographicSize, _zoomMin, _zoomMax);
             _camera.orthographicSize = orthographicSize;
 
             // Drag moving
