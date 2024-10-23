@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -19,9 +18,9 @@ public class FieldTile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
 
     Coroutine _colorCoroutine;
 
-    Coroutine tooltipMoveCoroutine;
+    Coroutine _tooltipMoveCoroutine;
 
-    Coroutine tooltipTextColorCoroutine;
+    Coroutine _tooltipTextColorCoroutine;
 
     // Start is called before the first frame update
     void Start()
@@ -60,17 +59,17 @@ public class FieldTile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         }
         _colorCoroutine = StartCoroutine(FadeTileColor(0f, _fadeTransparent));
 
-        if (tooltipMoveCoroutine != null)
+        if (_tooltipMoveCoroutine != null)
         {
-            StopCoroutine(tooltipMoveCoroutine); // Stop any ongoing tooltip movement
+            StopCoroutine(_tooltipMoveCoroutine);
         }
-        tooltipMoveCoroutine = StartCoroutine(MoveTooltipY(0f, 0.644f));
+        _tooltipMoveCoroutine = StartCoroutine(MoveTooltipY(0f, 0.644f));
 
-        if (tooltipTextColorCoroutine != null)
+        if (_tooltipTextColorCoroutine != null)
         {
-            StopCoroutine(tooltipTextColorCoroutine); // Stop any ongoing tooltip text fade-out
+            StopCoroutine(_tooltipTextColorCoroutine);
         }
-        tooltipTextColorCoroutine = StartCoroutine(FadeTooltipTextColor(0f, 1f));
+        _tooltipTextColorCoroutine = StartCoroutine(FadeTooltipTextColor(0f, 1f));
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -83,17 +82,17 @@ public class FieldTile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         }
         _colorCoroutine = StartCoroutine(FadeTileColor(_fadeTransparent, 0f));
 
-        if (tooltipMoveCoroutine != null)
+        if (_tooltipMoveCoroutine != null)
         {
-            StopCoroutine(tooltipMoveCoroutine); // Stop any ongoing tooltip movement
+            StopCoroutine(_tooltipMoveCoroutine);
         }
-        tooltipMoveCoroutine = StartCoroutine(MoveTooltipY(0.644f, 0f));
+        _tooltipMoveCoroutine = StartCoroutine(MoveTooltipY(0.644f, 0f));
 
-        if (tooltipTextColorCoroutine != null)
+        if (_tooltipTextColorCoroutine != null)
         {
-            StopCoroutine(tooltipTextColorCoroutine); // Stop any ongoing tooltip text fade-in
+            StopCoroutine(_tooltipTextColorCoroutine);
         }
-        tooltipTextColorCoroutine = StartCoroutine(FadeTooltipTextColor(1f, 0f));
+        _tooltipTextColorCoroutine = StartCoroutine(FadeTooltipTextColor(1f, 0f));
     }
 
     IEnumerator FadeTileColor(float startAlpha, float endAlpha)
@@ -151,26 +150,23 @@ public class FieldTile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     {
         Color currentColor = _tooltipText.color;
         float elapsedTime = 0f;
-        float duration = 0.35f; // Duration of the fade
+        float duration = 0.35f;
 
-        startAlpha = currentColor.a; // Get current alpha as the starting point
+        startAlpha = currentColor.a;
 
         while (elapsedTime < duration)
         {
             elapsedTime += Time.deltaTime;
             float t = elapsedTime / duration;
 
-            // Lerp between the start and end alpha values
             float newAlpha = Mathf.Lerp(startAlpha, endAlpha, t);
 
-            // Apply the new alpha to the current color
             currentColor.a = newAlpha;
             _tooltipText.color = currentColor;
 
             yield return null;
         }
 
-        // Ensure the final alpha is exactly the target value
         currentColor.a = endAlpha;
         _tooltipText.color = currentColor;
     }
