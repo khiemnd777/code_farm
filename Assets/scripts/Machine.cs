@@ -100,7 +100,7 @@ public class Machine : MonoBehaviour, IPointerClickHandler
                 {
                     var component = Instantiate<MachineComponent>(componentPrefab, Vector3.zero, Quaternion.identity, _machineComponentContainer);
                     component.machine = this;
-                    component.RegisterVariables();
+                    //component.RegisterVariables();
                     _machineComponents.Add(component);
                 }
             }

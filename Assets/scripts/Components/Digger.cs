@@ -6,11 +6,11 @@ public class Digger : MachineComponent
     [SerializeField]
     float _enegryForDigging;
 
-    public override void RegisterVariables()
-    {
-        print("Register dig function");
-        machine.RegisterVariableOrFunction("dig", new System.Func<IEnumerator>(Dig), true);
-    }
+    //public override void RegisterVariables()
+    //{
+    //    print("Register dig function");
+    //    machine.RegisterVariableOrFunction("dig", new System.Func<IEnumerator>(Dig), true);
+    //}
 
     IEnumerator Dig()
     {
