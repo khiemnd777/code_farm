@@ -22,6 +22,8 @@ public class Machine : MonoBehaviour, IPointerClickHandler
     public List<MachineComponent> machineComponentPrefabs;
     List<MachineComponent> _machineComponents = new List<MachineComponent>();
 
+    public List<MachineComponent> machineComponents;
+
     [SerializeField]
     Transform _machineComponentContainer;
 
@@ -66,7 +68,7 @@ public class Machine : MonoBehaviour, IPointerClickHandler
     // Start is called before the first frame update
     protected virtual void Start()
     {
-        AssemblyMachineComponents();
+        //AssemblyMachineComponents();
 
         //RegisterVariableOrFunction("move_forward", new System.Func<IEnumerator>(MoveForward), true);
         //RegisterVariableOrFunction("rotate_clockwise", new System.Func<IEnumerator>(RotateClockwise), true);
@@ -586,6 +588,28 @@ public class Machine : MonoBehaviour, IPointerClickHandler
         //    yield break;
         //}
         SendCoroutineComplete(this.name, "RotateCounterclockwise");
+    }
+
+    protected virtual IEnumerator Remove()
+    {
+        var duration = 0.5f; // Duration of fade and scale out
+        var elapsedTime = 0f;
+
+        Vector3 originalScale = this.transform.localScale;
+
+        while (elapsedTime < duration)
+        {
+            elapsedTime += Time.deltaTime;
+            var t = elapsedTime / duration;
+            this.transform.localScale = Vector3.Lerp(originalScale, Vector3.zero, t);
+            yield return null;
+        }
+
+        Destroy(this.gameObject);
+
+        yield return null;
+
+        SendCoroutineComplete(this.name, "Remove");
     }
 
     protected Field GetField()
