@@ -11,9 +11,12 @@ public class ResetController : MonoBehaviour
 
     Machine _currentMachine;
 
+    Camera _camera;
+
     void Start()
     {
         _currentMachine = FindAnyObjectByType<Machine>();
+        _camera = FindAnyObjectByType<Camera>();
     }
 
     public void Spawn()
@@ -27,11 +30,12 @@ public class ResetController : MonoBehaviour
         _currentMachine.name = "Block";
         _currentMachine.transform.localScale = Vector3.zero;
         StartCoroutine(SpawnEffect(_currentMachine.transform));
+        StartCoroutine(MoveCameraToTarget(new Vector3(0, 0, _camera.transform.position.z)));
     }
 
     private IEnumerator SpawnEffect(Transform target)
     {
-        float duration = 1.0f; // Duration of the scaling effect
+        float duration = .25f; // Duration of the scaling effect
         float elapsedTime = 0f;
 
         while (elapsedTime < duration)
@@ -50,7 +54,25 @@ public class ResetController : MonoBehaviour
         SendCoroutineComplete(this.name, "Spawn");
     }
 
-    public IEnumerator Reset()
+    private IEnumerator MoveCameraToTarget(Vector3 targetPosition)
+    {
+        var duration = .25f;
+        var elapsedTime = 0f;
+
+        var startingPosition = _camera.transform.position;
+
+        while (elapsedTime < duration)
+        {
+            elapsedTime += Time.deltaTime;
+            _camera.transform.position = Vector3.Lerp(startingPosition, targetPosition, elapsedTime / duration);
+
+            yield return null;
+        }
+
+        _camera.transform.position = targetPosition;
+    }
+
+    public IEnumerator Remove()
     {
         var components = _currentMachine.machineComponents;
         if (components != null)
@@ -58,23 +80,21 @@ public class ResetController : MonoBehaviour
             components.ForEach(component => StartCoroutine(component.Remove()));
         }
 
-        var duration = 0.5f; // Duration of fade and scale out
+        var duration = .25f;
         var elapsedTime = 0f;
 
-        Vector3 originalScale = this.transform.localScale;
+        Vector3 originalScale = _currentMachine.transform.localScale;
 
         while (elapsedTime < duration)
         {
             elapsedTime += Time.deltaTime;
             var t = elapsedTime / duration;
-            this.transform.localScale = Vector3.Lerp(originalScale, Vector3.zero, t);
+            _currentMachine.transform.localScale = Vector3.Lerp(originalScale, Vector3.zero, t);
             yield return null;
         }
 
         Destroy(_currentMachine.gameObject);
-
         yield return null;
-
         SendCoroutineComplete(this.name, "Remove");
     }
 }
