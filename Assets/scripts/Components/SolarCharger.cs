@@ -12,7 +12,6 @@ public class SolarCharger : MachineComponent
 
     IEnumerator Charge()
     {
-        print("Charging");
         yield return null;
     }
 }

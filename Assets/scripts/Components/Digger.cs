@@ -14,7 +14,6 @@ public class Digger : MachineComponent
 
     IEnumerator Dig()
     {
-        print("Dig");
         var startingScale = Vector3.one;
         var finalScale = Vector3.one * .75f;
         var elapsedTime = 0f;

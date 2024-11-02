@@ -180,7 +180,6 @@ public class Machine : MonoBehaviour, IPointerClickHandler
 
     public virtual void Run()
     {
-        print("Run");
         if (isRunning)
         {
             return;
@@ -201,7 +200,6 @@ public class Machine : MonoBehaviour, IPointerClickHandler
 
     public virtual void Stop()
     {
-        print("Stop");
         if (isReseting)
         {
             return;
@@ -367,7 +365,6 @@ public class Machine : MonoBehaviour, IPointerClickHandler
                 {
                     case PathDirection.Forward:
                         {
-                            print("Move forward");
                             var startingPos = transform.position;
 
                             _currentPosition = startingPos;
@@ -469,7 +466,6 @@ public class Machine : MonoBehaviour, IPointerClickHandler
         {
             yield break;
         }
-        print("Move forward");
         var startingPos = transform.position;
 
         _currentPosition = startingPos;
@@ -512,7 +508,6 @@ public class Machine : MonoBehaviour, IPointerClickHandler
         {
             yield break;
         }
-        print("Start Rotate clockwise");
         var startingAngle = transform.rotation;
 
         _currentAngle = startingAngle;
@@ -545,7 +540,6 @@ public class Machine : MonoBehaviour, IPointerClickHandler
         //    SendCoroutineComplete(this.name, "RotateClockwise");
         //    yield break;
         //}
-        print("End Rotate clockwise");
         SendCoroutineComplete(this.name, "RotateClockwise");
     }
 
