@@ -10,13 +10,24 @@ public class FocusController : MonoBehaviour
 
     Machine _machine;
 
-    public float followSpeed = 2.0f;
+    public float followSpeed = 2f;
 
     bool _isFollowing = false;
+
+    Transform _cachedCameraTransform;
+    Transform _cachedMachineTransform;
+
+    public CameraMovement cameraMovement;
 
     void Start()
     {
         _camera = FindAnyObjectByType<Camera>();
+        _cachedCameraTransform = _camera.transform;
+
+        if (_machine)
+        {
+            _cachedMachineTransform = _machine.transform;
+        }
     }
 
     void Update()
@@ -24,21 +35,37 @@ public class FocusController : MonoBehaviour
         if (!_machine)
         {
             _machine = FindAnyObjectByType<Machine>();
+            if (_machine)
+            {
+                _cachedMachineTransform = _machine.transform;
+            }
         }
-        if (_isFollowing && _machine)
+    }
+
+    void LateUpdate()
+    {
+        if (_isFollowing && _machine && _cachedMachineTransform)
         {
-            var targetPosition = new Vector3(_machine.transform.position.x, _machine.transform.position.y, _camera.transform.position.z);
-            _camera.transform.position = Vector3.Lerp(_camera.transform.position, targetPosition, followSpeed * Time.deltaTime);
+            var targetPosition = new Vector3(_cachedMachineTransform.position.x, _cachedMachineTransform.position.y, _cachedCameraTransform.position.z);
+            _cachedCameraTransform.position = Vector3.Lerp(_cachedCameraTransform.position, targetPosition, followSpeed * Time.deltaTime);
         }
     }
 
     public void StartFollowing()
     {
+        if (cameraMovement)
+        {
+            cameraMovement.lockCamera = true;
+        }
         _isFollowing = true;
     }
 
     public void StopFollowing()
     {
+        if (cameraMovement)
+        {
+            cameraMovement.lockCamera = false;
+        }
         _isFollowing = false;
     }
 }

@@ -605,10 +605,10 @@ public class Machine : MonoBehaviour, IPointerClickHandler
             yield return null;
         }
 
-        Destroy(this.gameObject);
-
         yield return null;
-
+        Destroy(this.gameObject);
+        
+        yield return null;
         SendCoroutineComplete(this.name, "Remove");
     }
 

@@ -31,6 +31,18 @@ public class CameraMovement : MonoBehaviour
     Vector3 _dragOrigin;
     Vector3 _differenceMousePosition;
 
+    public bool lockCamera;
+
+    Transform _cacheCameraTransform;
+
+    void Start()
+    {
+        if (_camera)
+        {
+            _camera.farClipPlane = 50f;
+            _cacheCameraTransform = _camera.transform;
+        }
+    }
     // Update is called once per frame
     void Update()
     {
@@ -74,9 +86,12 @@ public class CameraMovement : MonoBehaviour
 
     void LateUpdate()
     {
-        _camera.transform.Translate(new Vector3(cameraX, cameraY), Space.Self);
-        var cameraPosition = Utility.CameraInBound(_camera, _limitedBoundingBox.centerTarget.position, _limitedBoundingBox.size.x, _limitedBoundingBox.size.y, _camera.transform.position);
-        _camera.transform.position = cameraPosition;
+        if (!lockCamera)
+        {
+            _cacheCameraTransform.Translate(new Vector3(cameraX, cameraY), Space.Self);
+            var cameraPosition = Utility.CameraInBound(_camera, _limitedBoundingBox.centerTarget.position, _limitedBoundingBox.size.x, _limitedBoundingBox.size.y, _cacheCameraTransform.position);
+            _cacheCameraTransform.position = cameraPosition;
+        }
     }
 
     void SetLimitedBoundingBox(BoundingBox limitedBoundingBox)

@@ -13,10 +13,18 @@ public class ResetController : MonoBehaviour
 
     Camera _camera;
 
+    public CameraMovement cameraMovement;
+
+    [SerializeField]
+    Boundary _bound;
+
+    BoundingBox _limitedBoundingBox;
+
     void Start()
     {
         _currentMachine = FindAnyObjectByType<Machine>();
         _camera = FindAnyObjectByType<Camera>();
+        _limitedBoundingBox = _bound.boundary;
     }
 
     public void Spawn()
@@ -30,12 +38,17 @@ public class ResetController : MonoBehaviour
         _currentMachine.name = "Block";
         _currentMachine.transform.localScale = Vector3.zero;
         StartCoroutine(SpawnEffect(_currentMachine.transform));
-        StartCoroutine(MoveCameraToTarget(new Vector3(0, 0, _camera.transform.position.z)));
+        if (cameraMovement)
+        {
+            cameraMovement.lockCamera = true;
+        }
+        var cameraPosition = Utility.CameraInBound(_camera, _limitedBoundingBox.centerTarget.position, _limitedBoundingBox.size.x, _limitedBoundingBox.size.y, new Vector3(0, 0, _camera.transform.position.z));
+        StartCoroutine(MoveCameraToTarget(cameraPosition));
     }
 
     private IEnumerator SpawnEffect(Transform target)
     {
-        float duration = .25f; // Duration of the scaling effect
+        float duration = .25f;
         float elapsedTime = 0f;
 
         while (elapsedTime < duration)
@@ -44,7 +57,7 @@ public class ResetController : MonoBehaviour
             float scale = Mathf.Lerp(0f, 1f, elapsedTime / duration);
             target.localScale = new Vector3(scale, scale, scale);
 
-            yield return null; // Wait for the next frame
+            yield return null;
         }
 
         target.localScale = Vector3.one;
@@ -66,10 +79,15 @@ public class ResetController : MonoBehaviour
             elapsedTime += Time.deltaTime;
             _camera.transform.position = Vector3.Lerp(startingPosition, targetPosition, elapsedTime / duration);
 
-            yield return null;
+            yield return new WaitForEndOfFrame();
         }
 
         _camera.transform.position = targetPosition;
+
+        if (cameraMovement)
+        {
+            cameraMovement.lockCamera = false;
+        }
     }
 
     public IEnumerator Remove()
@@ -79,6 +97,7 @@ public class ResetController : MonoBehaviour
         {
             components.ForEach(component => StartCoroutine(component.Remove()));
         }
+        yield return null;
 
         var duration = .25f;
         var elapsedTime = 0f;
@@ -92,7 +111,7 @@ public class ResetController : MonoBehaviour
             _currentMachine.transform.localScale = Vector3.Lerp(originalScale, Vector3.zero, t);
             yield return null;
         }
-
+        yield return null;
         Destroy(_currentMachine.gameObject);
         yield return null;
         SendCoroutineComplete(this.name, "Remove");
