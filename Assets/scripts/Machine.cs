@@ -89,6 +89,8 @@ public class Machine : MonoBehaviour, IPointerClickHandler
         // Init world map
         _map = new Map(_fieldGrid.initialWidth, _fieldGrid.initialHeight);
         ide = new IDE();
+
+        SendCoroutineComplete(this.name, "Loaded");
     }
 
     void AssemblyMachineComponents()
@@ -601,7 +603,7 @@ public class Machine : MonoBehaviour, IPointerClickHandler
 
         yield return null;
         Destroy(this.gameObject);
-        
+
         yield return null;
         SendCoroutineComplete(this.name, "Remove");
     }
