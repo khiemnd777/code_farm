@@ -44,8 +44,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dba12dfd62f9f94a95bce917fe29356, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _initialWidth: 50
-  _initialHeight: 50
+  _initialWidth: 64
+  _initialHeight: 64
   _fieldTilePrefab: {fileID: 8333792584831354557, guid: 629861e5a8002454ba0890ab5eb2807b, type: 3}
   _fieldTileLastPrefab: {fileID: 8333792584831354557, guid: 9e492a3a79b8349479ff5320e76f053b, type: 3}
   _fieldTileLastHPrefab: {fileID: 8333792584831354557, guid: 7e3c6f2f8dbfb6648a110d0a923e4573, type: 3}
