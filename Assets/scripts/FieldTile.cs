@@ -22,6 +22,11 @@ public class FieldTile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
 
     Coroutine _tooltipTextColorCoroutine;
 
+    public EdgeHighlighter[] edgeHighlighters;
+
+    [SerializeField]
+    BoxCollider2D _boxCollider2D;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -44,55 +49,67 @@ public class FieldTile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         _tooltipText.color = tooltipInitialColor;
     }
 
-    public void OnPointerMove(PointerEventData eventData)
+    void Update()
     {
-
+        if (_boxCollider2D)
+        {
+            if (_boxCollider2D.enabled != !LabyrinthSettings.isMazeMode)
+            {
+                _boxCollider2D.enabled = !LabyrinthSettings.isMazeMode;
+            }
+        }
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        _tooltipText.gameObject.SetActive(true);
-
-        if (_colorCoroutine != null)
+        if (!LabyrinthSettings.isMazeMode)
         {
-            StopCoroutine(_colorCoroutine);
-        }
-        _colorCoroutine = StartCoroutine(FadeTileColor(0f, _fadeTransparent));
+            _tooltipText.gameObject.SetActive(true);
 
-        if (_tooltipMoveCoroutine != null)
-        {
-            StopCoroutine(_tooltipMoveCoroutine);
-        }
-        _tooltipMoveCoroutine = StartCoroutine(MoveTooltipY(0f, 0.644f));
+            if (_colorCoroutine != null)
+            {
+                StopCoroutine(_colorCoroutine);
+            }
+            _colorCoroutine = StartCoroutine(FadeTileColor(0f, _fadeTransparent));
 
-        if (_tooltipTextColorCoroutine != null)
-        {
-            StopCoroutine(_tooltipTextColorCoroutine);
+            if (_tooltipMoveCoroutine != null)
+            {
+                StopCoroutine(_tooltipMoveCoroutine);
+            }
+            _tooltipMoveCoroutine = StartCoroutine(MoveTooltipY(0f, 0.644f));
+
+            if (_tooltipTextColorCoroutine != null)
+            {
+                StopCoroutine(_tooltipTextColorCoroutine);
+            }
+            _tooltipTextColorCoroutine = StartCoroutine(FadeTooltipTextColor(0f, 1f));
         }
-        _tooltipTextColorCoroutine = StartCoroutine(FadeTooltipTextColor(0f, 1f));
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        _tooltipText.gameObject.SetActive(false);
-
-        if (_colorCoroutine != null)
+        if (!LabyrinthSettings.isMazeMode)
         {
-            StopCoroutine(_colorCoroutine);
-        }
-        _colorCoroutine = StartCoroutine(FadeTileColor(_fadeTransparent, 0f));
+            _tooltipText.gameObject.SetActive(false);
 
-        if (_tooltipMoveCoroutine != null)
-        {
-            StopCoroutine(_tooltipMoveCoroutine);
-        }
-        _tooltipMoveCoroutine = StartCoroutine(MoveTooltipY(0.644f, 0f));
+            if (_colorCoroutine != null)
+            {
+                StopCoroutine(_colorCoroutine);
+            }
+            _colorCoroutine = StartCoroutine(FadeTileColor(_fadeTransparent, 0f));
 
-        if (_tooltipTextColorCoroutine != null)
-        {
-            StopCoroutine(_tooltipTextColorCoroutine);
+            if (_tooltipMoveCoroutine != null)
+            {
+                StopCoroutine(_tooltipMoveCoroutine);
+            }
+            _tooltipMoveCoroutine = StartCoroutine(MoveTooltipY(0.644f, 0f));
+
+            if (_tooltipTextColorCoroutine != null)
+            {
+                StopCoroutine(_tooltipTextColorCoroutine);
+            }
+            _tooltipTextColorCoroutine = StartCoroutine(FadeTooltipTextColor(1f, 0f));
         }
-        _tooltipTextColorCoroutine = StartCoroutine(FadeTooltipTextColor(1f, 0f));
     }
 
     IEnumerator FadeTileColor(float startAlpha, float endAlpha)

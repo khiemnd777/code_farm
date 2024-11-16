@@ -3,6 +3,9 @@ using UnityEngine;
 public class FieldGrid : MonoBehaviour
 {
     [SerializeField]
+    ObstacleSegmentController _obstacleSegmentController;
+
+    [SerializeField]
     int _initialWidth;
 
     [SerializeField]
@@ -80,6 +83,13 @@ public class FieldGrid : MonoBehaviour
                     x = x,
                     y = y,
                 };
+                if (_obstacleSegmentController)
+                {
+                    foreach (var edgeHighlighter in fieldTile.edgeHighlighters)
+                    {
+                        edgeHighlighter.obstacleSegmentController = _obstacleSegmentController;
+                    }
+                }
             }
         }
     }
