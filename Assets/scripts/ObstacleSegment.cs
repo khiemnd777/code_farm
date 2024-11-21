@@ -23,9 +23,14 @@ public class ObstacleSegment : MonoBehaviour, IPointerEnterHandler, IPointerExit
         _edgeHighlightOriginalColor = _edgeSprite.color;
     }
 
+    bool AllowBuildTheWall()
+    {
+        return LabyrinthSettings.isMazeMode && LabyrinthSettings.thing == LabyrinthThings.wall;
+    }
+
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (LabyrinthSettings.isMazeMode)
+        if (AllowBuildTheWall())
         {
             if (_edgeSprite != null)
             {
@@ -33,14 +38,14 @@ public class ObstacleSegment : MonoBehaviour, IPointerEnterHandler, IPointerExit
                 if (_edgeHighlightScaleCoroutine != null) StopCoroutine(_edgeHighlightScaleCoroutine);
 
                 _edgeHighlightColorCoroutine = StartCoroutine(AnimateColor(_edgeSprite, _edgeHighlightOriginalColor, _edgeHighlightHighlightColor, 0f));
-                _edgeHighlightScaleCoroutine = StartCoroutine(AnimateScale(_edgeSprite.transform, new Vector3(1.03f, 0.12f, 0f), new Vector3(1.03f, 0.2f, 0f) * _edgeHighlightTargetScaleMultiplier, 0f));
+                _edgeHighlightScaleCoroutine = StartCoroutine(AnimateScale(_edgeSprite.transform, new Vector3(1.12f, 0.12f, 0f), new Vector3(1.12f, 0.2f, 0f) * _edgeHighlightTargetScaleMultiplier, 0f));
             }
         }
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (LabyrinthSettings.isMazeMode)
+        if (AllowBuildTheWall())
         {
             if (_edgeSprite != null)
             {
@@ -48,18 +53,18 @@ public class ObstacleSegment : MonoBehaviour, IPointerEnterHandler, IPointerExit
                 if (_edgeHighlightScaleCoroutine != null) StopCoroutine(_edgeHighlightScaleCoroutine);
 
                 _edgeHighlightColorCoroutine = StartCoroutine(AnimateColor(_edgeSprite, _edgeHighlightHighlightColor, _edgeHighlightOriginalColor, _edgeHighlightAnimationDuration));
-                _edgeHighlightScaleCoroutine = StartCoroutine(AnimateScale(_edgeSprite.transform, new Vector3(1.03f, 0.2f, 0f) * _edgeHighlightTargetScaleMultiplier, new Vector3(1.03f, 0.12f, 0f), _edgeHighlightAnimationDuration));
+                _edgeHighlightScaleCoroutine = StartCoroutine(AnimateScale(_edgeSprite.transform, new Vector3(1.12f, 0.2f, 0f) * _edgeHighlightTargetScaleMultiplier, new Vector3(1.12f, 0.12f, 0f), _edgeHighlightAnimationDuration));
             }
         }
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (LabyrinthSettings.isMazeMode)
+        if (AllowBuildTheWall())
         {
             if (_edgeSprite != null)
             {
-                StartCoroutine(AnimateScaleDelete(_edgeSprite.transform, new Vector3(1.03f, 0.2f, 0f) * _edgeHighlightTargetScaleMultiplier, Vector3.zero, _edgeHighlightAnimationDuration));
+                StartCoroutine(AnimateScaleDelete(_edgeSprite.transform, new Vector3(1.12f, 0.2f, 0f) * _edgeHighlightTargetScaleMultiplier, Vector3.zero, _edgeHighlightAnimationDuration));
             }
         }
     }

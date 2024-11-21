@@ -29,9 +29,14 @@ public class EdgeHighlighter : MonoBehaviour, IPointerEnterHandler, IPointerExit
         _edgeHighlightOriginalColor = _edgeSprite.color;
     }
 
+    bool AllowBuildTheWall()
+    {
+        return LabyrinthSettings.isMazeMode && LabyrinthSettings.thing == LabyrinthThings.wall;
+    }
+
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (LabyrinthSettings.isMazeMode)
+        if (AllowBuildTheWall())
         {
             if (_edgeSprite != null)
             {
@@ -46,7 +51,7 @@ public class EdgeHighlighter : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (LabyrinthSettings.isMazeMode)
+        if (AllowBuildTheWall())
         {
             if (_edgeSprite != null)
             {
@@ -61,7 +66,7 @@ public class EdgeHighlighter : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (LabyrinthSettings.isMazeMode)
+        if (AllowBuildTheWall())
         {
             if (_edgeSprite && obstacleSegmentController)
             {
