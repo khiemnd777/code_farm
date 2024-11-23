@@ -480,7 +480,7 @@ public class Machine : MonoBehaviour, IPointerClickHandler
 
         if (FieldUtils.IsBeingInField(finalPos, _fieldGrid.initialWidth, _fieldGrid.initialHeight))
         {
-            if (_obstacleSegmentController && !_obstacleSegmentController.HasObstacle(transform))
+            if (_obstacleSegmentController && !_obstacleSegmentController.HasObstacleAhead(transform))
             {
                 var elapsedTime = 0f;
                 while (elapsedTime <= 1f)

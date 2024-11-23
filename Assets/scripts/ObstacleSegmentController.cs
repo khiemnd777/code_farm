@@ -28,7 +28,7 @@ public class ObstacleSegmentController : MonoBehaviour
         Destroy(obstacleSegment.gameObject);
     }
 
-    public bool HasObstacle(Transform machineTransform)
+    public bool HasObstacleAhead(Transform machineTransform)
     {
         var position = machineTransform.position + machineTransform.rotation * (Vector3.right / 2);
         var field = FieldUtils.ToField(position);
