@@ -199,6 +199,51 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 128280157}
   m_CullTransparentMesh: 1
+--- !u!1 &295289569
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 295289570}
+  - component: {fileID: 295289571}
+  m_Layer: 0
+  m_Name: LabyrinthFloorController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &295289570
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 295289569}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1107.7871, y: 492.99594, z: -0.0689064}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &295289571
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 295289569}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5df8c75cd390043478e390408efdabda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _floorPrefab: {fileID: 3963555829181307542, guid: fe50a897803a6cd4c9d7edcda9b86618, type: 3}
 --- !u!1 &448477763
 GameObject:
   m_ObjectHideFlags: 0
@@ -339,6 +384,7 @@ MonoBehaviour:
   _switchTo: 1
   thingButton: {fileID: 448477766}
   _switchToButton: {fileID: 1189105816}
+  _fieldGrid: {fileID: 1686037366}
 --- !u!1 &484332400
 GameObject:
   m_ObjectHideFlags: 0
@@ -829,7 +875,7 @@ RectTransform:
   m_Children:
   - {fileID: 1698157908}
   m_Father: {fileID: 0}
-  m_RootOrder: 6
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -863,7 +909,7 @@ GameObject:
   - component: {fileID: 893373969}
   - component: {fileID: 893373968}
   m_Layer: 5
-  m_Name: Labybrinth Canvas
+  m_Name: Labyrinth Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -946,7 +992,7 @@ RectTransform:
   - {fileID: 448477764}
   - {fileID: 1189105811}
   m_Father: {fileID: 0}
-  m_RootOrder: 13
+  m_RootOrder: 14
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -1130,7 +1176,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1113384777
 GameObject:
@@ -1162,7 +1208,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1113384779
 MonoBehaviour:
@@ -1317,6 +1363,7 @@ MonoBehaviour:
   _switchTo: 0
   thingButton: {fileID: 1189105813}
   _switchToButton: {fileID: 448477769}
+  _fieldGrid: {fileID: 1686037366}
 --- !u!1 &1302217114
 GameObject:
   m_ObjectHideFlags: 0
@@ -1698,7 +1745,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 12
+  m_RootOrder: 13
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1548476132
 GameObject:
@@ -1730,7 +1777,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1548476134
 MonoBehaviour:
@@ -1888,8 +1935,19 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 9
+  m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1686037366 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8577101276666437026, guid: 3c2e0302d3186b84d91c2a5bcedbc0c8, type: 3}
+  m_PrefabInstance: {fileID: 8577101275929277416}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9dba12dfd62f9f94a95bce917fe29356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1698157907
 GameObject:
   m_ObjectHideFlags: 0
@@ -2334,7 +2392,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6303351938620971562, guid: 9bd9495136ac4df4095ea726c19cafd7, type: 3}
       propertyPath: m_RootOrder
-      value: 10
+      value: 11
       objectReference: {fileID: 0}
     - target: {fileID: 6303351938620971562, guid: 9bd9495136ac4df4095ea726c19cafd7, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2549,7 +2607,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2018518882
 MonoBehaviour:
@@ -2595,7 +2653,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 11
+  m_RootOrder: 12
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2119326449
 GameObject:
@@ -2738,6 +2796,7 @@ MonoBehaviour:
   thingButtons:
   - {fileID: 448477769}
   - {fileID: 1189105816}
+  _fieldGrid: {fileID: 1686037366}
 --- !u!1 &2145086424
 GameObject:
   m_ObjectHideFlags: 0
@@ -2894,7 +2953,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2586388078362348122, guid: fbed0de0029a27c418d7f428d3247cd0, type: 3}
       propertyPath: m_RootOrder
-      value: 8
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 2586388078362348122, guid: fbed0de0029a27c418d7f428d3247cd0, type: 3}
       propertyPath: m_AnchorMax.x
@@ -2983,7 +3042,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8577101276666437025, guid: 3c2e0302d3186b84d91c2a5bcedbc0c8, type: 3}
       propertyPath: m_RootOrder
-      value: 7
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 8577101276666437025, guid: 3c2e0302d3186b84d91c2a5bcedbc0c8, type: 3}
       propertyPath: m_LocalPosition.x
@@ -3025,6 +3084,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8577101276666437026, guid: 3c2e0302d3186b84d91c2a5bcedbc0c8, type: 3}
+      propertyPath: _initialWidth
+      value: 72
+      objectReference: {fileID: 0}
+    - target: {fileID: 8577101276666437026, guid: 3c2e0302d3186b84d91c2a5bcedbc0c8, type: 3}
+      propertyPath: _initialHeight
+      value: 72
+      objectReference: {fileID: 0}
+    - target: {fileID: 8577101276666437026, guid: 3c2e0302d3186b84d91c2a5bcedbc0c8, type: 3}
+      propertyPath: _labyrinthFloorController
+      value: 
+      objectReference: {fileID: 295289571}
     - target: {fileID: 8577101276666437026, guid: 3c2e0302d3186b84d91c2a5bcedbc0c8, type: 3}
       propertyPath: _obstacleSegmentController
       value: 

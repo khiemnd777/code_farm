@@ -1,11 +1,14 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 public class ObstacleSegment : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
+    [NonSerialized]
     public ObstacleSegmentController obstacleSegmentController;
 
+    [SerializeField]
     SpriteRenderer _edgeSprite;
 
     Color _edgeHighlightOriginalColor = Color.white;
@@ -19,8 +22,10 @@ public class ObstacleSegment : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     void Start()
     {
-        _edgeSprite = this.GetComponent<SpriteRenderer>();
-        _edgeHighlightOriginalColor = _edgeSprite.color;
+        if (_edgeSprite)
+        {
+            _edgeHighlightOriginalColor = _edgeSprite.color;
+        }
     }
 
     bool AllowBuildTheWall()

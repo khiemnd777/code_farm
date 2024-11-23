@@ -8,6 +8,11 @@ public class EdgeHighlighter : MonoBehaviour, IPointerEnterHandler, IPointerExit
     [SerializeField]
     BoxCollider2D _boxCollider2D;
 
+    public BoxCollider2D boxCollider2D
+    {
+        get { return _boxCollider2D; }
+    }
+
     [NonSerialized]
     public ObstacleSegmentController obstacleSegmentController;
 
@@ -29,6 +34,17 @@ public class EdgeHighlighter : MonoBehaviour, IPointerEnterHandler, IPointerExit
         _edgeHighlightOriginalColor = _edgeSprite.color;
     }
 
+    void Update()
+    {
+        // if (_boxCollider2D)
+        // {
+        //     if (_boxCollider2D.enabled != AllowBuildTheWall())
+        //     {
+        //         _boxCollider2D.enabled = AllowBuildTheWall();
+        //     }
+        // }
+    }
+
     bool AllowBuildTheWall()
     {
         return LabyrinthSettings.isMazeMode && LabyrinthSettings.thing == LabyrinthThings.wall;
@@ -40,9 +56,14 @@ public class EdgeHighlighter : MonoBehaviour, IPointerEnterHandler, IPointerExit
         {
             if (_edgeSprite != null)
             {
-                if (_edgeHighlightColorCoroutine != null) StopCoroutine(_edgeHighlightColorCoroutine);
-                if (_edgeHighlightScaleCoroutine != null) StopCoroutine(_edgeHighlightScaleCoroutine);
-
+                if (_edgeHighlightColorCoroutine != null)
+                {
+                    StopCoroutine(_edgeHighlightColorCoroutine);
+                }
+                if (_edgeHighlightScaleCoroutine != null)
+                {
+                    StopCoroutine(_edgeHighlightScaleCoroutine);
+                }
                 _edgeHighlightColorCoroutine = StartCoroutine(AnimateColor(_edgeSprite, _edgeHighlightOriginalColor, _edgeHighlightHighlightColor, 0f));
                 _edgeHighlightScaleCoroutine = StartCoroutine(AnimateScale(_edgeSprite.transform, new Vector3(1.03f, 0.12f, 0f), new Vector3(1.03f, 0.2f, 0f) * _edgeHighlightTargetScaleMultiplier, 0f));
             }

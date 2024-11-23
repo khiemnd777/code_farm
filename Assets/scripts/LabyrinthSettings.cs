@@ -1,3 +1,5 @@
+using System;
+
 public enum LabyrinthThings
 {
   wall = 0,
@@ -10,8 +12,9 @@ public class LabyrinthSettings
 
   public static LabyrinthThings thing = LabyrinthThings.wall;
 
-  public static void SwitchThing(LabyrinthThings thing)
+  public static void SwitchThing(LabyrinthThings thing, Action<LabyrinthThings> postSwitch)
   {
     LabyrinthSettings.thing = thing;
+    postSwitch?.Invoke(thing);
   }
 }

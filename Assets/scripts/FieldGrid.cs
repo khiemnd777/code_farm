@@ -1,9 +1,14 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class FieldGrid : MonoBehaviour
 {
+    public List<FieldTile> fieldTiles = new();
     [SerializeField]
     ObstacleSegmentController _obstacleSegmentController;
+
+    [SerializeField]
+    LabyrinthFloorController _labyrinthFloorController;
 
     [SerializeField]
     int _initialWidth;
@@ -90,6 +95,11 @@ public class FieldGrid : MonoBehaviour
                         edgeHighlighter.obstacleSegmentController = _obstacleSegmentController;
                     }
                 }
+                if (_labyrinthFloorController && fieldTile.floorHighlight)
+                {
+                    fieldTile.floorHighlight.floorController = _labyrinthFloorController;
+                }
+                fieldTiles.Add(fieldTile);
             }
         }
     }

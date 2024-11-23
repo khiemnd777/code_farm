@@ -14,6 +14,9 @@ public class LabyrinthSwitchThingButton : MonoBehaviour
     [SerializeField]
     LabyrinthSwitchThingButton _switchToButton;
 
+    [SerializeField]
+    FieldGrid _fieldGrid;
+
     void Start()
     {
         if (thingButton)
@@ -24,7 +27,40 @@ public class LabyrinthSwitchThingButton : MonoBehaviour
 
     void Switch()
     {
-        LabyrinthSettings.SwitchThing(_switchTo);
+        LabyrinthSettings.SwitchThing(_switchTo, (thing) =>
+        {
+            switch (thing)
+            {
+                case LabyrinthThings.wall:
+                    {
+                        if (_fieldGrid)
+                        {
+                            _fieldGrid.fieldTiles.ForEach(tile =>
+                            {
+                                foreach (var edgeHighlighter in tile.edgeHighlighters)
+                                {
+                                    edgeHighlighter.boxCollider2D.enabled = true;
+                                }
+                            });
+                        }
+                    }
+                    break;
+                case LabyrinthThings.floor:
+                    {
+                        if (_fieldGrid)
+                        {
+                            _fieldGrid.fieldTiles.ForEach(tile =>
+                            {
+                                foreach (var edgeHighlighter in tile.edgeHighlighters)
+                                {
+                                    edgeHighlighter.boxCollider2D.enabled = false;
+                                }
+                            });
+                        }
+                    }
+                    break;
+            }
+        });
         gameObject.SetActive(false);
         if (_switchToButton)
         {

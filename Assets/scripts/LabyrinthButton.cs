@@ -13,6 +13,9 @@ public class LabyrinthButton : MonoBehaviour
     [SerializeField]
     LabyrinthSwitchThingButton[] thingButtons;
 
+    [SerializeField]
+    FieldGrid _fieldGrid;
+
     Color _normalModeColor = Color.white;
     Color _mazeModeColor = Color.yellow;
 
@@ -39,7 +42,20 @@ public class LabyrinthButton : MonoBehaviour
     {
         if (!LabyrinthSettings.isMazeMode)
         {
-            LabyrinthSettings.SwitchThing(LabyrinthThings.wall);
+            LabyrinthSettings.SwitchThing(LabyrinthThings.wall, (thing) =>
+            {
+                if (_fieldGrid)
+                {
+                    _fieldGrid.fieldTiles.ForEach(tile =>
+                    {
+                        foreach (var edgeHighlighter in tile.edgeHighlighters)
+                        {
+                            edgeHighlighter.boxCollider2D.enabled = true;
+                        }
+                        // tile.floorHighlight.boxCollider2D.enabled = false;
+                    });
+                }
+            });
         }
     }
 

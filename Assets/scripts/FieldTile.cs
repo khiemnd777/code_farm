@@ -23,6 +23,7 @@ public class FieldTile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     Coroutine _tooltipTextColorCoroutine;
 
     public EdgeHighlighter[] edgeHighlighters;
+    public FloorTileHighlight floorHighlight;
 
     [SerializeField]
     BoxCollider2D _boxCollider2D;
