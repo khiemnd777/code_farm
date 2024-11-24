@@ -12,7 +12,6 @@ public class Machine : MonoBehaviour, IPointerClickHandler
     [DllImport("__Internal")]
     private static extern void SendCoroutineComplete(string gameObjectNamePtr, string coroutineNamePtr);
 
-    [SerializeField]
     ObstacleSegmentController _obstacleSegmentController;
 
     public IDE ide;
@@ -240,6 +239,7 @@ public class Machine : MonoBehaviour, IPointerClickHandler
         //            .ForEach((x) => _scope.SetVariable(x.Key, x.Value));
         //    }
         //}
+        _obstacleSegmentController = FindObjectOfType<ObstacleSegmentController>();
     }
 
     void Compile()

@@ -30,12 +30,10 @@ public class ObstacleSegmentController : MonoBehaviour
 
     public bool HasObstacleAhead(Transform machineTransform)
     {
-        var position = machineTransform.position + machineTransform.rotation * (Vector3.right / 2);
-        var field = FieldUtils.ToField(position);
+        var position = machineTransform.position + machineTransform.right * .5f;
         return obstacleSegments.Any(segment =>
         {
-            var obstacleField = FieldUtils.ToField(segment.transform.position);
-            return field.x == obstacleField.y && field.y == obstacleField.y;
+            return Utility.ArePositionsEqual(position, segment.transform.position);
         });
     }
 }

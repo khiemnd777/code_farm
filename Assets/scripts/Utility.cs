@@ -23,4 +23,10 @@ public class Utility
         var y = Mathf.Clamp(position.y, min.y + halfHeight, max.y - halfHeight);
         return new Vector3(x, y, position.z);
     }
+
+    public static bool ArePositionsEqual(Vector3 a, Vector3 b, float threshold = 1e-4f)
+    {
+        return Mathf.Abs(a.x - b.x) < threshold &&
+               Mathf.Abs(a.y - b.y) < threshold;
+    }
 }
