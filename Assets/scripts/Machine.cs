@@ -7,7 +7,7 @@ using System.Collections;
 using UnityEngine.EventSystems;
 using System.Runtime.InteropServices;
 
-public class Machine : MonoBehaviour, IPointerClickHandler
+public class Machine : OneBehaviour, IPointerClickHandler
 {
     [DllImport("__Internal")]
     private static extern void SendCoroutineComplete(string gameObjectNamePtr, string coroutineNamePtr);

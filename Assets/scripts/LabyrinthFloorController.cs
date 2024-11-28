@@ -15,8 +15,16 @@ public class LabyrinthFloorController : MonoBehaviour
     {
         if (floorHighlightTransform && _floorPrefab)
         {
-            var floorPosition = new Vector3(floorHighlightTransform.position.x, floorHighlightTransform.position.y, .5f);
-            var floorIns = Instantiate<LabyrinthFloor>(_floorPrefab, floorPosition, floorHighlightTransform.rotation);
+            GenerateFloor(floorHighlightTransform.position, Quaternion.identity);
+        }
+    }
+
+    public void GenerateFloor(Vector3 position, Quaternion rotation)
+    {
+        if (_floorPrefab)
+        {
+            var floorPosition = new Vector3(position.x, position.y, .5f);
+            var floorIns = Instantiate<LabyrinthFloor>(_floorPrefab, floorPosition, rotation);
             floorIns.floorController = this;
             floors.Add(floorIns);
         }

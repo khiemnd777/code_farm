@@ -1,11 +1,7 @@
-using System.Runtime.InteropServices;
 using UnityEngine;
 
-public class SpeedController : MonoBehaviour
+public class SpeedController : OneBehaviour
 {
-    [DllImport("__Internal")]
-    public static extern void SendCoroutineComplete(string gameObjectNamePtr, string coroutineNamePtr);
-    
     public float initialSpeed = 1.0f;
 
     void Start()

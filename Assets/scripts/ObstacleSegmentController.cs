@@ -15,8 +15,20 @@ public class ObstacleSegmentController : MonoBehaviour
     {
         if (edgeTransform && _obstacleSegmentPrefab)
         {
-            var obstaclePosition = new Vector3(edgeTransform.position.x, edgeTransform.position.y, -1f);
-            var obstacleSegment = Instantiate<ObstacleSegment>(_obstacleSegmentPrefab, obstaclePosition, edgeTransform.rotation);
+            GenerateObstacle(edgeTransform.position, edgeTransform.rotation);
+        }
+    }
+
+    public void GenerateObstacle(Vector3 position, Quaternion rotation)
+    {
+        if (_obstacleSegmentPrefab)
+        {
+            var obstaclePosition = new Vector3(position.x, position.y, -1f);
+            var obstacleSegment = Instantiate<ObstacleSegment>(
+                _obstacleSegmentPrefab,
+                obstaclePosition,
+                rotation
+            );
             obstacleSegment.obstacleSegmentController = this;
             obstacleSegments.Add(obstacleSegment);
         }
