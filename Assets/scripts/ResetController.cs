@@ -1,12 +1,8 @@
 using System.Collections;
-using System.Runtime.InteropServices;
 using UnityEngine;
 
-public class ResetController : MonoBehaviour
+public class ResetController : OneBehaviour
 {
-    [DllImport("__Internal")]
-    public static extern void SendCoroutineComplete(string gameObjectNamePtr, string coroutineNamePtr);
-
     public Machine machinePrefab;
 
     Machine _currentMachine;

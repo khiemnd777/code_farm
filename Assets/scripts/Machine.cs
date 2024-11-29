@@ -7,10 +7,12 @@ using System.Collections;
 using UnityEngine.EventSystems;
 using System.Runtime.InteropServices;
 
-public class Machine : MonoBehaviour, IPointerClickHandler
+public class Machine : OneBehaviour, IPointerClickHandler
 {
     [DllImport("__Internal")]
     private static extern void SendCoroutineComplete(string gameObjectNamePtr, string coroutineNamePtr);
+
+    ObstacleSegmentController _obstacleSegmentController;
 
     public IDE ide;
 
@@ -237,6 +239,7 @@ public class Machine : MonoBehaviour, IPointerClickHandler
         //            .ForEach((x) => _scope.SetVariable(x.Key, x.Value));
         //    }
         //}
+        _obstacleSegmentController = FindObjectOfType<ObstacleSegmentController>();
     }
 
     void Compile()
@@ -477,29 +480,31 @@ public class Machine : MonoBehaviour, IPointerClickHandler
 
         if (FieldUtils.IsBeingInField(finalPos, _fieldGrid.initialWidth, _fieldGrid.initialHeight))
         {
-            var elapsedTime = 0f;
-            while (elapsedTime <= 1f)
+            if (_obstacleSegmentController && !_obstacleSegmentController.HasObstacleAhead(transform))
             {
-                if (!isRunning)
+                var elapsedTime = 0f;
+                while (elapsedTime <= 1f)
                 {
+                    if (!isRunning)
+                    {
+                        yield return null;
+                        break;
+                    }
+                    elapsedTime += Time.deltaTime / .35f;
+                    var newPosition = Vector3.Lerp(startingPos, finalPos, elapsedTime);
+                    newPosition.z = -1f;
+                    transform.position = newPosition;
                     yield return null;
-                    break;
                 }
-                elapsedTime += Time.deltaTime / .35f;
-                var newPosition = Vector3.Lerp(startingPos, finalPos, elapsedTime);
-                newPosition.z = -1f;
-                transform.position = newPosition;
-                yield return null;
-            }
 
-            finalPos.z = -1f;
-            _currentPosition = finalPos;
+                finalPos.z = -1f;
+                _currentPosition = finalPos;
+            }
         }
         else
         {
             yield return null;
         }
-        print(transform.position.z);
 
         SendCoroutineComplete(this.name, "MoveForward");
     }
