@@ -9,17 +9,14 @@ using System.Runtime.InteropServices;
 
 public class Machine : OneBehaviour, IPointerClickHandler
 {
-    [DllImport("__Internal")]
-    private static extern void SendCoroutineComplete(string gameObjectNamePtr, string coroutineNamePtr);
-
     ObstacleSegmentController _obstacleSegmentController;
 
     public IDE ide;
 
     public string pyExecutedFilePath;
     public string typeName;
-    [SerializeField]
-    PropertiesCanvas _propertiesCanvasPrefab;
+    // [SerializeField]
+    // PropertiesCanvas _propertiesCanvasPrefab;
 
     public List<MachineComponent> machineComponentPrefabs;
     List<MachineComponent> _machineComponents = new List<MachineComponent>();
@@ -43,7 +40,7 @@ public class Machine : OneBehaviour, IPointerClickHandler
 
     List<string> _yieldFunctions = new();
 
-    Coroutine _mainStartFnCoroutine;
+    // Coroutine _mainStartFnCoroutine;
 
     Vector3 _currentPosition;
 
@@ -87,7 +84,7 @@ public class Machine : OneBehaviour, IPointerClickHandler
         // Init energy
         _energy = 100000f;
 
-        _fieldGrid = FindObjectOfType<FieldGrid>();
+        _fieldGrid = FindFirstObjectByType<FieldGrid>();
         // Init world map
         _map = new Map(_fieldGrid.initialWidth, _fieldGrid.initialHeight);
         ide = new IDE();
@@ -239,7 +236,7 @@ public class Machine : OneBehaviour, IPointerClickHandler
         //            .ForEach((x) => _scope.SetVariable(x.Key, x.Value));
         //    }
         //}
-        _obstacleSegmentController = FindObjectOfType<ObstacleSegmentController>();
+        _obstacleSegmentController = FindFirstObjectByType<ObstacleSegmentController>();
     }
 
     void Compile()

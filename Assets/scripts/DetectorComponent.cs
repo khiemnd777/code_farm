@@ -7,8 +7,8 @@ public class DetectorComponent : MachineComponent
 
     void Start()
     {
-        _obstacleSegmentController = FindObjectOfType<ObstacleSegmentController>();
-        _labyrinthFloorController = FindObjectOfType<LabyrinthFloorController>();
+        _obstacleSegmentController = FindFirstObjectByType<ObstacleSegmentController>();
+        _labyrinthFloorController = FindFirstObjectByType<LabyrinthFloorController>();
     }
 
     protected virtual IEnumerator Detect()
