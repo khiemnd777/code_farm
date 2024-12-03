@@ -74,6 +74,7 @@ public class DotComponent : MachineComponent
         );
         if (dot != null)
         {
+            _instantiatedDots.RemoveAll(d => dot.GetInstanceID() == d.GetInstanceID());
             yield return StartCoroutine(Remove(dot));
         }
         yield return null;
