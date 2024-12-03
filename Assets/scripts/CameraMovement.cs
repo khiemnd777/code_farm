@@ -57,8 +57,8 @@ public class CameraMovement : MonoBehaviour
             if (_limitedBoundingBox.centerTarget)
             {
                 // Moving by WASD
-                cameraX = Input.GetAxis("Horizontal") * _speed * Time.deltaTime;
-                cameraY = Input.GetAxis("Vertical") * _speed * Time.deltaTime;
+                cameraX = Input.GetAxis("Horizontal") * _speed;
+                cameraY = Input.GetAxis("Vertical") * _speed;
             }
 
 
@@ -79,8 +79,8 @@ public class CameraMovement : MonoBehaviour
 
             Vector3 mousePosition = _camera.ScreenToWorldPoint(Input.mousePosition);
             _differenceMousePosition = mousePosition - new Vector3(cameraX, cameraY);
-            cameraX = (_dragOrigin.x - _differenceMousePosition.x) * _dragSpeed * Time.deltaTime;
-            cameraY = (_dragOrigin.y - _differenceMousePosition.y) * _dragSpeed * Time.deltaTime;
+            cameraX = (_dragOrigin.x - _differenceMousePosition.x) * _dragSpeed;
+            cameraY = (_dragOrigin.y - _differenceMousePosition.y) * _dragSpeed;
         }
     }
 

@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class DotComponent : MachineComponent
@@ -13,6 +14,13 @@ public class DotComponent : MachineComponent
     internal class DotArgs
     {
         public string color;
+    }
+
+    Transform _transformCached;
+
+    void Start()
+    {
+        _transformCached = machine.transform;
     }
 
     protected virtual IEnumerator Dot(string jsonArguments)
@@ -54,6 +62,24 @@ public class DotComponent : MachineComponent
         SendCoroutineComplete(this.name, "Dot");
     }
 
+    public IEnumerator RemoveAtCurrentPosition()
+    {
+        if (_instantiatedDots == null || _instantiatedDots.Count == 0)
+        {
+            SendCoroutineComplete(this.name, "RemoveAtCurrentPosition");
+            yield break;
+        }
+        var dot = _instantiatedDots.FirstOrDefault(
+            d => Utility.ArePositionsEqual(_transformCached.position, d.transform.position)
+        );
+        if (dot != null)
+        {
+            yield return StartCoroutine(Remove(dot));
+        }
+        yield return null;
+        SendCoroutineComplete(this.name, "RemoveAtCurrentPosition");
+    }
+
     private IEnumerator Remove(Dot dot)
     {
         var duration = .25f;
@@ -84,6 +110,11 @@ public class DotComponent : MachineComponent
 
     public override IEnumerator Remove()
     {
+        if (_instantiatedDots == null || _instantiatedDots.Count == 0)
+        {
+            SendCoroutineComplete(this.name, "RemoveAllDots");
+            yield break;
+        }
         foreach (var dot in _instantiatedDots)
         {
             if (dot != null)

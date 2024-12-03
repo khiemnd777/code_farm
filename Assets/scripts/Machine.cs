@@ -466,6 +466,7 @@ public class Machine : OneBehaviour, IPointerClickHandler
     {
         if (!isRunning)
         {
+            SendCoroutineComplete(this.name, "MoveForward");
             yield break;
         }
         var startingPos = transform.position;
@@ -510,6 +511,7 @@ public class Machine : OneBehaviour, IPointerClickHandler
     {
         if (!isRunning)
         {
+            SendCoroutineComplete(this.name, "RotateClockwise");
             yield break;
         }
         var startingAngle = transform.rotation;
@@ -551,6 +553,7 @@ public class Machine : OneBehaviour, IPointerClickHandler
     {
         if (!isRunning)
         {
+            SendCoroutineComplete(this.name, "RotateCounterclockwise");
             yield break;
         }
         print("Rotate counterclockwise");

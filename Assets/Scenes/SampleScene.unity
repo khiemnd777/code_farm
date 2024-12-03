@@ -623,12 +623,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _camera: {fileID: 519420031}
-  _speed: 12
+  _speed: 0.325
   _zoomSpeed: 3
   _zoomMin: 1
-  _zoomMax: 12
+  _zoomMax: 20
   _bound: {fileID: 1399160748}
-  _dragSpeed: 12
+  _dragSpeed: 0.75
   lockCamera: 0
 --- !u!1 &552246767
 GameObject:
@@ -2483,11 +2483,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6326803596017724042, guid: 9bd9495136ac4df4095ea726c19cafd7, type: 3}
       propertyPath: boundary.size.x
-      value: 82
+      value: 86
       objectReference: {fileID: 0}
     - target: {fileID: 6326803596017724042, guid: 9bd9495136ac4df4095ea726c19cafd7, type: 3}
       propertyPath: boundary.size.y
-      value: 82
+      value: 86
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
