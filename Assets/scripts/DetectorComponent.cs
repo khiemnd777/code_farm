@@ -1,9 +1,13 @@
 using System.Collections;
+using UnityEngine;
 
 public class DetectorComponent : MachineComponent
 {
     ObstacleSegmentController _obstacleSegmentController;
     LabyrinthFloorController _labyrinthFloorController;
+
+    [SerializeField]
+    DotComponent _dotComponent;
 
     void Start()
     {
@@ -28,6 +32,15 @@ public class DetectorComponent : MachineComponent
             {
                 yield return null;
                 SendReturnedStringValueCoroutineComplete(this.name, "Detect", "wall");
+                yield break;
+            }
+        }
+        if (_dotComponent)
+        {
+            if (_dotComponent.DotAhead(machine.transform))
+            {
+                yield return null;
+                SendReturnedStringValueCoroutineComplete(this.name, "Detect", "dot");
                 yield break;
             }
         }

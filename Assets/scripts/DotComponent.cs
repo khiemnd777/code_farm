@@ -10,10 +10,22 @@ public class DotComponent : MachineComponent
 
     List<Dot> _instantiatedDots = new();
 
+    public List<Dot> instantiatedDots
+    {
+        get { return _instantiatedDots; }
+    }
+
     [System.Serializable]
     internal class DotArgs
     {
         public string color;
+    }
+
+    [System.Serializable]
+    internal class DotAndRemoveArgs
+    {
+        public string color;
+        public float? seconds;
     }
 
     Transform _transformCached;
@@ -25,6 +37,12 @@ public class DotComponent : MachineComponent
 
     protected virtual IEnumerator Dot(string jsonArguments)
     {
+        if (!machine.isRunning)
+        {
+            yield return null;
+            SendCoroutineComplete(this.name, "Dot");
+            yield break;
+        }
         if (_dotPrefab != null)
         {
             var dotInstance = Instantiate<Dot>(_dotPrefab, transform.position, Quaternion.identity);
@@ -56,17 +74,72 @@ public class DotComponent : MachineComponent
             {
                 dotInstance.dotRenderer.color = Color.white;
             }
-
-            yield return null;
         }
+        yield return null;
         SendCoroutineComplete(this.name, "Dot");
+    }
+
+    protected virtual IEnumerator DotAndRemove(string jsonArguments)
+    {
+        if (!machine.isRunning)
+        {
+            yield return null;
+            SendCoroutineComplete(this.name, "DotAndRemove");
+            yield break;
+        }
+        if (_dotPrefab != null)
+        {
+            var dotInstance = Instantiate<Dot>(_dotPrefab, transform.position, Quaternion.identity);
+            _instantiatedDots.Add(dotInstance);
+            var currentPosition = dotInstance.transform.position;
+            currentPosition.z = 0f;
+            currentPosition.x = Mathf.Round(currentPosition.x);
+            currentPosition.y = Mathf.Round(currentPosition.y);
+            dotInstance.transform.position = currentPosition;
+
+            var color = "#FFFFFF";
+            var seconds = 1.5f;
+
+            if (!string.IsNullOrEmpty(jsonArguments))
+            {
+                DotAndRemoveArgs args = JsonUtility.FromJson<DotAndRemoveArgs>(jsonArguments);
+                color = args.color;
+                if (args.seconds != null)
+                {
+                    seconds = args.seconds.GetValueOrDefault();
+                }
+            }
+
+            if (string.IsNullOrEmpty(color))
+            {
+                color = "#FFFFFF";
+            }
+
+            if (ColorUtility.TryParseHtmlString(color, out Color parsedColor))
+            {
+                dotInstance.dotRenderer.color = parsedColor;
+            }
+            else
+            {
+                dotInstance.dotRenderer.color = Color.white;
+            }
+            yield return null;
+            SendCoroutineComplete(this.name, "DotAndRemove");
+            yield return new WaitForSeconds(seconds);
+            _instantiatedDots.RemoveAll(d => dotInstance.GetInstanceID() == d.GetInstanceID());
+            StartCoroutine(Remove(dotInstance));
+            yield break;
+        }
+        yield return null;
+        SendCoroutineComplete(this.name, "DotAndRemove");
     }
 
     public IEnumerator RemoveAtCurrentPosition()
     {
+        yield return null;
+        SendCoroutineComplete(this.name, "RemoveAtCurrentPosition");
         if (_instantiatedDots == null || _instantiatedDots.Count == 0)
         {
-            SendCoroutineComplete(this.name, "RemoveAtCurrentPosition");
             yield break;
         }
         var dot = _instantiatedDots.FirstOrDefault(
@@ -77,34 +150,11 @@ public class DotComponent : MachineComponent
             _instantiatedDots.RemoveAll(d => dot.GetInstanceID() == d.GetInstanceID());
             yield return StartCoroutine(Remove(dot));
         }
-        yield return null;
-        SendCoroutineComplete(this.name, "RemoveAtCurrentPosition");
     }
 
     private IEnumerator Remove(Dot dot)
     {
-        var duration = .25f;
-        var elapsedTime = 0f;
-
-        var dotRenderer = dot.dotRenderer;
-        var originalScale = dot.transform.localScale;
-        var originalColor = dotRenderer.color;
-        var fadedColor = originalColor;
-
-        while (elapsedTime < duration)
-        {
-            elapsedTime += Time.deltaTime;
-            var t = elapsedTime / duration;
-
-            // Scale down
-            dot.transform.localScale = Vector3.Lerp(originalScale, Vector3.zero, t);
-
-            // Fade out
-            fadedColor.a = Mathf.Lerp(originalColor.a, 0, t);
-            dotRenderer.color = fadedColor;
-
-            yield return null;
-        }
+        yield return StartCoroutine(dot.Hide());
 
         Destroy(dot.gameObject);
     }
@@ -113,6 +163,7 @@ public class DotComponent : MachineComponent
     {
         if (_instantiatedDots == null || _instantiatedDots.Count == 0)
         {
+            yield return null;
             SendCoroutineComplete(this.name, "RemoveAllDots");
             yield break;
         }
@@ -129,5 +180,14 @@ public class DotComponent : MachineComponent
         yield return null;
 
         SendCoroutineComplete(this.name, "RemoveAllDots");
+    }
+
+    public bool DotAhead(Transform machineTransform)
+    {
+        var position = machineTransform.position;
+        return _instantiatedDots.Any(dot =>
+        {
+            return Utility.ArePositionsEqual(position, dot.transform.position);
+        });
     }
 }

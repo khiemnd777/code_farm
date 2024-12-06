@@ -5,16 +5,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Collections;
 using UnityEngine.EventSystems;
-using System.Runtime.InteropServices;
 
 public class Machine : OneBehaviour, IPointerClickHandler
 {
     ObstacleSegmentController _obstacleSegmentController;
+    GeneralSettings _generalSettings;
 
     public IDE ide;
 
     public string pyExecutedFilePath;
     public string typeName;
+
     // [SerializeField]
     // PropertiesCanvas _propertiesCanvasPrefab;
 
@@ -31,6 +32,8 @@ public class Machine : OneBehaviour, IPointerClickHandler
 
     [System.NonSerialized]
     public bool isReseting;
+
+    float _speed = 1f;
 
     //ScriptEngine _engine = PythonEngine.instance;
     //ScriptSource _source = null;
@@ -56,11 +59,13 @@ public class Machine : OneBehaviour, IPointerClickHandler
 
     public float energy
     {
-        get => _energy; set => _energy = value;
+        get => _energy;
+        set => _energy = value;
     }
 
     [SerializeField]
     float _energyForMoving;
+
     [SerializeField]
     float _energyForRotating;
 
@@ -101,7 +106,12 @@ public class Machine : OneBehaviour, IPointerClickHandler
                 var componentPrefab = machineComponentPrefabs.ElementAt(i);
                 if (componentPrefab)
                 {
-                    var component = Instantiate<MachineComponent>(componentPrefab, Vector3.zero, Quaternion.identity, _machineComponentContainer);
+                    var component = Instantiate<MachineComponent>(
+                        componentPrefab,
+                        Vector3.zero,
+                        Quaternion.identity,
+                        _machineComponentContainer
+                    );
                     component.machine = this;
                     //component.RegisterVariables();
                     _machineComponents.Add(component);
@@ -146,15 +156,9 @@ public class Machine : OneBehaviour, IPointerClickHandler
     }
 
     // Update is called once per frame
-    protected virtual void Update()
-    {
+    protected virtual void Update() { }
 
-    }
-
-    protected virtual void FixedUpdate()
-    {
-
-    }
+    protected virtual void FixedUpdate() { }
 
     void OnEnable()
     {
@@ -218,10 +222,7 @@ public class Machine : OneBehaviour, IPointerClickHandler
         StartCoroutine("Reset");
     }
 
-    protected virtual void RegisterVariables()
-    {
-
-    }
+    protected virtual void RegisterVariables() { }
 
     protected virtual void Init()
     {
@@ -237,6 +238,7 @@ public class Machine : OneBehaviour, IPointerClickHandler
         //    }
         //}
         _obstacleSegmentController = FindFirstObjectByType<ObstacleSegmentController>();
+        _generalSettings = FindFirstObjectByType<GeneralSettings>();
     }
 
     void Compile()
@@ -350,22 +352,22 @@ public class Machine : OneBehaviour, IPointerClickHandler
     protected virtual IEnumerator MoveTo(int x, int y)
     {
         var start = FieldUtils.ToField(transform.position);
-        var pathFound = _map.FindPath(start, new Field
-        {
-            x = x,
-            y = y
-        });
+        var pathFound = _map.FindPath(start, new Field { x = x, y = y });
         var traversePath = _map.TraversePath(pathFound);
 
         foreach (var path in traversePath)
         {
             print($"{{x: {path.field.x}, y: {path.field.y}, direction: {path.direction}}}");
-            var pathDirections = Map.ConvertToPathDirection(path.direction, transform.rotation.eulerAngles.z);
+            var pathDirections = Map.ConvertToPathDirection(
+                path.direction,
+                transform.rotation.eulerAngles.z
+            );
             foreach (var pathDirection in pathDirections)
             {
                 switch (pathDirection)
                 {
                     case PathDirection.Forward:
+
                         {
                             var startingPos = transform.position;
 
@@ -373,14 +375,24 @@ public class Machine : OneBehaviour, IPointerClickHandler
 
                             var finalPos = transform.position + transform.right;
 
-                            if (FieldUtils.IsBeingInField(finalPos, _fieldGrid.initialWidth, _fieldGrid.initialHeight))
+                            if (
+                                FieldUtils.IsBeingInField(
+                                    finalPos,
+                                    _fieldGrid.initialWidth,
+                                    _fieldGrid.initialHeight
+                                )
+                            )
                             {
                                 var elapsedTime = 0f;
 
                                 while (elapsedTime <= 1f)
                                 {
                                     elapsedTime += Time.deltaTime / .35f;
-                                    transform.position = Vector3.Lerp(startingPos, finalPos, elapsedTime);
+                                    transform.position = Vector3.Lerp(
+                                        startingPos,
+                                        finalPos,
+                                        elapsedTime
+                                    );
                                     yield return null;
                                 }
 
@@ -396,6 +408,7 @@ public class Machine : OneBehaviour, IPointerClickHandler
                         }
                         break;
                     case PathDirection.TurnLeft:
+
                         {
                             var startingAngle = transform.rotation;
                             _currentAngle = startingAngle;
@@ -408,7 +421,11 @@ public class Machine : OneBehaviour, IPointerClickHandler
                             while (elapsedTime <= 1f)
                             {
                                 elapsedTime += Time.deltaTime / .35f;
-                                transform.rotation = Quaternion.Lerp(startingAngle, finalAngle, elapsedTime);
+                                transform.rotation = Quaternion.Lerp(
+                                    startingAngle,
+                                    finalAngle,
+                                    elapsedTime
+                                );
                                 yield return null;
                             }
 
@@ -426,6 +443,7 @@ public class Machine : OneBehaviour, IPointerClickHandler
                         }
                         break;
                     case PathDirection.TurnRight:
+
                         {
                             var startingAngle = transform.rotation;
 
@@ -439,7 +457,11 @@ public class Machine : OneBehaviour, IPointerClickHandler
                             while (elapsedTime <= 1f)
                             {
                                 elapsedTime += Time.deltaTime / .35f;
-                                transform.rotation = Quaternion.Lerp(startingAngle, finalAngle, elapsedTime);
+                                transform.rotation = Quaternion.Lerp(
+                                    startingAngle,
+                                    finalAngle,
+                                    elapsedTime
+                                );
                                 yield return null;
                             }
 
@@ -466,6 +488,7 @@ public class Machine : OneBehaviour, IPointerClickHandler
     {
         if (!isRunning)
         {
+            yield return null;
             SendCoroutineComplete(this.name, "MoveForward");
             yield break;
         }
@@ -475,10 +498,12 @@ public class Machine : OneBehaviour, IPointerClickHandler
 
         var finalPos = transform.position + transform.right;
 
-
         if (FieldUtils.IsBeingInField(finalPos, _fieldGrid.initialWidth, _fieldGrid.initialHeight))
         {
-            if (_obstacleSegmentController && !_obstacleSegmentController.HasObstacleAhead(transform))
+            if (
+                _obstacleSegmentController
+                && !_obstacleSegmentController.HasObstacleAhead(transform)
+            )
             {
                 var elapsedTime = 0f;
                 while (elapsedTime <= 1f)
@@ -488,7 +513,7 @@ public class Machine : OneBehaviour, IPointerClickHandler
                         yield return null;
                         break;
                     }
-                    elapsedTime += Time.deltaTime / .35f;
+                    elapsedTime += Time.deltaTime / .35f * _generalSettings.speed;
                     var newPosition = Vector3.Lerp(startingPos, finalPos, elapsedTime);
                     newPosition.z = -1f;
                     transform.position = newPosition;
@@ -511,6 +536,7 @@ public class Machine : OneBehaviour, IPointerClickHandler
     {
         if (!isRunning)
         {
+            yield return null;
             SendCoroutineComplete(this.name, "RotateClockwise");
             yield break;
         }
@@ -529,7 +555,7 @@ public class Machine : OneBehaviour, IPointerClickHandler
             {
                 break;
             }
-            elapsedTime += Time.deltaTime / .125f;
+            elapsedTime += Time.deltaTime / .125f * _generalSettings.speed;
             transform.rotation = Quaternion.Lerp(startingAngle, finalAngle, elapsedTime);
             yield return null;
         }
@@ -553,6 +579,7 @@ public class Machine : OneBehaviour, IPointerClickHandler
     {
         if (!isRunning)
         {
+            yield return null;
             SendCoroutineComplete(this.name, "RotateCounterclockwise");
             yield break;
         }
@@ -571,7 +598,7 @@ public class Machine : OneBehaviour, IPointerClickHandler
             {
                 break;
             }
-            elapsedTime += Time.deltaTime / .125f;
+            elapsedTime += Time.deltaTime / .125f * _generalSettings.speed;
             transform.rotation = Quaternion.Lerp(startingAngle, finalAngle, elapsedTime);
             yield return null;
         }
