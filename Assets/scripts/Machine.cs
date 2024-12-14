@@ -197,10 +197,21 @@ public class Machine : OneBehaviour, IPointerClickHandler
 
         isRunning = true;
 
+        transform.position = RoundPosition(transform.position);
+
         //Compile();
         //Execute();
 
         //_mainStartFnCoroutine = StartCoroutine("StartMainFn");
+    }
+
+    Vector3 RoundPosition(Vector3 position)
+    {
+        return new Vector3(
+            Mathf.Round(position.x),
+            Mathf.Round(position.y),
+            Mathf.Round(position.z)
+        );
     }
 
     public virtual void Stop()
@@ -219,7 +230,7 @@ public class Machine : OneBehaviour, IPointerClickHandler
         //}
 
 
-        StartCoroutine("Reset");
+        StartCoroutine(Reset());
     }
 
     protected virtual void RegisterVariables() { }
@@ -325,9 +336,13 @@ public class Machine : OneBehaviour, IPointerClickHandler
             while (elapsedTime <= 1f)
             {
                 elapsedTime += Time.deltaTime / .5f;
-                transform.position = Vector3.Lerp(startingPos, finalPos, elapsedTime);
+                var newPos = Vector3.Lerp(startingPos, finalPos, elapsedTime);
+                newPos.z = -1f;
+                transform.position = newPos;
                 yield return null;
             }
+            transform.position = RoundPosition(transform.position);
+            print("Reset At: " + transform.position.x);
         }
 
         isReseting = false;
@@ -492,11 +507,12 @@ public class Machine : OneBehaviour, IPointerClickHandler
             SendCoroutineComplete(this.name, "MoveForward");
             yield break;
         }
-        var startingPos = transform.position;
 
+        var startingPos = RoundPosition(transform.position);
+        print("Start MoveForward: " + startingPos.x);
         _currentPosition = startingPos;
 
-        var finalPos = transform.position + transform.right;
+        var finalPos = RoundPosition(startingPos + transform.right);
 
         if (FieldUtils.IsBeingInField(finalPos, _fieldGrid.initialWidth, _fieldGrid.initialHeight))
         {
@@ -521,7 +537,8 @@ public class Machine : OneBehaviour, IPointerClickHandler
                 }
 
                 finalPos.z = -1f;
-                _currentPosition = finalPos;
+                _currentPosition = RoundPosition(finalPos);
+                print("End MoveForward: " + _currentPosition.x);
             }
         }
         else
@@ -540,6 +557,7 @@ public class Machine : OneBehaviour, IPointerClickHandler
             SendCoroutineComplete(this.name, "RotateClockwise");
             yield break;
         }
+
         var startingAngle = transform.rotation;
 
         _currentAngle = startingAngle;
@@ -583,7 +601,7 @@ public class Machine : OneBehaviour, IPointerClickHandler
             SendCoroutineComplete(this.name, "RotateCounterclockwise");
             yield break;
         }
-        print("Rotate counterclockwise");
+
         var startingAngle = transform.rotation;
         _currentAngle = startingAngle;
 
